@@ -57,6 +57,17 @@ i_years <- array(c(80, 80, 80, 80, 60, 40, 30), length(i_inis), dimnames = list(
 
 ####################
 
+#' Lee los años de cadenas de texto que terminan con los años
+#'
+#' @param txt texto o vector de textos
+#'
+#' @return list
+#' @export
+#'
+read_years <- function(txt){
+  return(as.numeric(substr(txt, nchar(txt) - 4 + 1, nchar(txt))))
+}
+
 #' Ordena los datos y devuelve una lista con el orden
 #'
 #' @param data datos
@@ -284,12 +295,14 @@ quality_control <- function(data, coor, max_dist){
       i_serie <- all_series[1]
       for(i_serie in all_series){
         i_order <- data_order[[i_serie]] #Orden de cercanía con las otras series
-        data_ori <- data[rownames(data_percent_month), i_serie]
-        data_10 <- data_percent_month[, i_order] # Datos en orden de las otras series
-        data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = n_reference_stations))
-        data_refe <- apply(data_refe_10, c(1), mean, na.rm = TRUE)
-        data_correct[rownames(data_percent_month)[!is.na(data_ori) & data_ori!=0 & !is.na(data_percent_month[, i_serie]) & !is.na(data_refe) & abs(data_percent_month[, i_serie] - data_refe) > max_diff_anomaly], i_serie] <- NA
-        data_correct[rownames(data_percent_month)[!is.na(data_ori) & data_ori==0 & !is.na(data_percent_month[, i_serie]) & !is.na(data_refe) & abs(data_percent_month[, i_serie] - data_refe) > max_diff_anomaly_0], i_serie] <- NA
+        if(length(i_order) > 1){
+          data_ori <- data[rownames(data_percent_month), i_serie]
+          data_10 <- data_percent_month[, i_order] # Datos en orden de las otras series
+          data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = n_reference_stations))
+          data_refe <- apply(data_refe_10, c(1), mean, na.rm = TRUE)
+          data_correct[rownames(data_percent_month)[!is.na(data_ori) & data_ori!=0 & !is.na(data_percent_month[, i_serie]) & !is.na(data_refe) & abs(data_percent_month[, i_serie] - data_refe) > max_diff_anomaly], i_serie] <- NA
+          data_correct[rownames(data_percent_month)[!is.na(data_ori) & data_ori==0 & !is.na(data_percent_month[, i_serie]) & !is.na(data_refe) & abs(data_percent_month[, i_serie] - data_refe) > max_diff_anomaly_0], i_serie] <- NA
+        }
       }
     }
   }
@@ -330,12 +343,6 @@ overlap_station <- function(control_data){
 #' @export
 #'
 fill_unfillable_station  <- function(data, fillable_years){
-
-  # fillable_data <- data$data[, apply(is.na(data$data), c(2), sum) > 0]
-  # fillable_data <- fillable_data[, apply(is.na(fillable_data), c(2), sum) <= fillable_years]
-  # fillable_data <- fillable_data[, apply(is.na(fillable_data[1:60, ]), c(2), sum) == 0]
-  # fillable_data <- fillable_data[, apply(is.na(fillable_data[(dim(fillable_data)[1]-60+1):dim(fillable_data)[1], ]), c(2), sum) == 0]
-
   fillable_data <- data$data[, apply(is.na(data$data), c(2), sum) > 0 & apply(is.na(data$data), c(2), sum) <= fillable_years & apply(is.na(data$data[1:60, ]), c(2), sum) == 0 & apply(is.na(data$data[(dim(data$data)[1]-60+1):dim(data$data)[1], ]), c(2), sum) == 0]
 
   if(!is.null(dim(fillable_data))){
@@ -384,9 +391,11 @@ fill_series <- function(control_data, min_correlation, max_dist){
   i_serie <- all_series[1]
   for(i_serie in all_series){
     i_order <- data_near[[i_serie]] #Orden de distancia con las otras series
-    data_10 <- control_data$data[, i_order] # Datos en orden de las otras series
-    data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = 1))
-    return_control_data$data[summer & is.na(return_control_data$data[, i_serie]), i_serie] <- data_refe_10[summer & is.na(return_control_data$data[, i_serie])]
+    if(length(i_order) > 1){
+      data_10 <- control_data$data[, i_order] # Datos en orden de las otras series
+      data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = 1))
+      return_control_data$data[summer & is.na(return_control_data$data[, i_serie]), i_serie] <- data_refe_10[summer & is.na(return_control_data$data[, i_serie])]
+    }
   }
 
   ## Rellenamos con estaciones a menos de 200km con correlación por encima de 0.7
@@ -516,8 +525,8 @@ save_data <- function(data_ori, control_data, folder_name = NA){
   i_ini <- i_inis[length(i_inis)]
   for(i_ini in i_inis){
     i_year <- i_years[as.character(i_ini)]
-    year_ini <- max(i_ini, as.numeric(substr(rownames(data_ori)[1], 8, 11)))
-    year_end <- min(i_end, as.numeric(substr(rownames(data_ori)[length(rownames(data_ori))], 8, 11)))
+    year_ini <- max(i_ini, read_years(rownames(data_ori)[1]))
+    year_end <- min(i_end, read_years(rownames(data_ori)[length(rownames(data_ori))]))
     use_data_ini <- which(grepl(year_ini, rownames(data_ori)))
     use_data_end <- which(grepl(year_end, rownames(data_ori)))
     use_data <- use_data_ini[1]:use_data_end[length(use_data_end)]
@@ -835,7 +844,7 @@ calc_mkTrend_pval <- function(data) {
 #' @export
 #'
 calc_data_year <- function(data) {
-  year <- as.numeric(substr(rownames(data), 8, 11))
+  year <- read_years(rownames(data))
   data_year <- as.data.frame(data) 
   data_year <- stats::aggregate(data_year, by = list("year" = year), FUN = sum)
   rownames(data_year) <- paste0("year_", as.character(unique(year)))
@@ -866,19 +875,6 @@ calc_data_year_month_station <- function(data, calc_function) {
     sens_slope[[month]] <- apply(calc_data_year(data[months == month, ]), c(2), calc_function)
   }
   return(sens_slope)
-
-  # i <- 12
-  # trend <- list()
-  # trend[["year"]] <- data[, i]
-  # trend[["summer"]] <- data[months %in% c("Jun", "Jul", "Aug"), i]
-  # trend[["autumn"]] <- data[months %in% c("Sep", "Oct", "Nov"), i]
-  # trend[["winter"]]  <- data[months %in% c("Dec", "Jan", "Feb"), i]
-  # trend[["spring"]] <- data[months %in% c("Mar", "Apr", "May"), i]
-  # month <- months[8]
-  # for(month in unique(months)){
-  #   trend[[month]] <- data[months == month, i] 
-  # }
-  # saveRDS(trend, "trend12.rds")
 }
 
 #' esta función calcula las tendencias. Lo que nos interesa es slp (es la función de cálculo del Sen slope), pval (a veces no da resultado por temas de iteración) entonces coger pval0.
@@ -973,10 +969,8 @@ mkTrend <- function(x, ci = .95) {
 #' @export
 #'
 calc_mkTrend_slp <- function(data){
-  years <- as.numeric(substr(names(data), 8, 11))
-  # mkTrend_slp <- stats::lm(data ~ years)$coefficients[[1]]
+  years <- read_years(names(data))
   if(sum(data) != 0){
-    # mkTrend_slp <- mkTrend(data)$"Sen's Slope"
     mkTrend_slp <- RobustLinearReg::theil_sen_regression(data ~ years)$coefficients[2]
   }else{
     mkTrend_slp <- 0  
@@ -1001,7 +995,7 @@ dry_spell_trend <- function(index, threshold) {
   a.4 <- NA
 
   if(sum(!is.na(index)) > 0){
-    years <- as.numeric(substr(names(index), 8, 11))
+    years <- read_years(names(index))
 
     n <- length(index)
     below <- which(index < threshold)
@@ -1090,7 +1084,7 @@ dry_spell_trend <- function(index, threshold) {
 #' @export
 #'
 mobile_trends <- function(datos) {
-  anos <- unique(as.numeric(substr(names(datos), 8, 11)))
+  anos <- unique(read_years(names(datos)))
 
   matriz_p <- NA
   matriz_s <- NA
@@ -1133,10 +1127,10 @@ mobile_trends <- function(datos) {
 #' @export
 #'
 calc_percentage <- function(datos) {
-  years <- as.numeric(substr(names(datos), 8, 11))
+  years <- read_years(names(datos))
   intercept_t <- RobustLinearReg::theil_sen_regression(datos ~ years)$coefficients
-  final <- length(datos) * intercept_t[2] + intercept_t[1]
-  inicial <- 1 * intercept_t[2] + intercept_t[1]
+  final <- years[length(years)] * intercept_t[2] + intercept_t[1]
+  inicial <- years[1] * intercept_t[2] + intercept_t[1]
   percentage <- 100 * final / inicial - 100
   if(is.na(percentage)){
     percentage <- 0

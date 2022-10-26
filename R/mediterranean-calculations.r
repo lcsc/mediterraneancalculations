@@ -46,7 +46,6 @@ mediterranean_calculations <- function(file_data = "data.csv", file_coor = "coor
 	# Control de calidad, se eliminan series completas y datos sueltos inválidos
 	control_data <- quality_control(data = read_all_data$data, coor = read_all_data$coor, max_dist = max_dist)
 	data_select = read_all_data$data[rownames(control_data$data), colnames(control_data$data)]
-	# print(paste("Distintos de NAs en los datos", sum(!is.na(read_all_data$data)), "en los datos que se pueden aprovechar", sum(!is.na(data_select)), "y en los datos que han pasado el control", sum(!is.na(control_data$data))))
 
 	#################### save.image("quality_control.RData")
 
@@ -80,7 +79,6 @@ second_data_fill_data <- function(file_data, fillable_years = 36){
 	no_nas <- dim(file_data$data)[1] - apply(file_data$data, c(2), sum_no_nas) < dim(file_data$data)[1] * percentage_filled_data / 100
 	control_data <- list(data = file_data$data[, no_nas], coor = file_data$coor[no_nas, ])
 
-	# print(paste("Datos válidos 0.95", i_ini, sum(no_nas), "de", length(no_nas)))
 	if(sum(no_nas) > 0){
 		# segundo relleno
 		fill_data <- fill_series(control_data = control_data, min_correlation = min_second_correlation, max_dist = NA)
@@ -246,11 +244,12 @@ alexanderson_homogenize <- function(data){
 #' Código Sergio para generar arrays y hacer figuras de tendencia
 #'
 #' @param file_data ruta del fichero de datos
+#' @param calc_mobile_trends_data Calculamos mobile_trends_data o no
 #'
 #' @return None
 #' @export
 #'
-calculate_statistics_data <- function(file_data){
+calculate_statistics_data <- function(file_data, calc_mobile_trends_data = TRUE){
 	# Serie promedio de todo el país
 	average <- apply(file_data$data, c(1), mean)
 
@@ -262,22 +261,11 @@ calculate_statistics_data <- function(file_data){
 	spi_data[["scale_3"]][is.infinite(spi_data[["scale_3"]]) & spi_data[["scale_3"]] > 0] = max(spi_data[["scale_3"]][!is.infinite(spi_data[["scale_3"]])], na.rm = TRUE)
 	spi_data[["scale_3"]][is.infinite(spi_data[["scale_3"]]) & spi_data[["scale_3"]] < 0] = min(spi_data[["scale_3"]][!is.infinite(spi_data[["scale_3"]])], na.rm = TRUE)
 	spi_data[["scale_3"]][c(1:2), ] = NA
-	# spi_data[["scale_9"]] <- SPEI::spi(as.matrix(file_data$data), scale = 9, verbose = FALSE)$fitted
-	# # spi_data[["scale_9"]][is.infinite(spi_data[["scale_9"]]) | is.na(spi_data[["scale_9"]])] = 0
-	# spi_data[["scale_9"]][is.na(spi_data[["scale_9"]])] = 0
-	# spi_data[["scale_9"]][is.infinite(spi_data[["scale_9"]]) & spi_data[["scale_9"]] > 0] = max(spi_data[["scale_9"]][!is.infinite(spi_data[["scale_9"]])], na.rm = TRUE)
-	# spi_data[["scale_9"]][is.infinite(spi_data[["scale_9"]]) & spi_data[["scale_9"]] < 0] = min(spi_data[["scale_9"]][!is.infinite(spi_data[["scale_9"]])], na.rm = TRUE)
-	# spi_data[["scale_9"]][c(1:8), ] = NA
 	spi_data[["scale_12"]] <- SPEI::spi(as.matrix(file_data$data), scale = 12, verbose = FALSE)$fitted
 	spi_data[["scale_12"]][is.infinite(spi_data[["scale_12"]]) & spi_data[["scale_12"]] > 0] = max(spi_data[["scale_12"]][!is.infinite(spi_data[["scale_12"]])], na.rm = TRUE)
 	spi_data[["scale_12"]][is.infinite(spi_data[["scale_12"]]) & spi_data[["scale_12"]] < 0] = min(spi_data[["scale_12"]][!is.infinite(spi_data[["scale_12"]])], na.rm = TRUE)
-	# spi_data[["scale_24"]] <- SPEI::spi(as.matrix(file_data$data), scale = 24, verbose = FALSE)$fitted
-	# spi_data[["scale_24"]][is.infinite(spi_data[["scale_24"]]) & spi_data[["scale_24"]] > 0] = max(spi_data[["scale_24"]][!is.infinite(spi_data[["scale_24"]])], na.rm = TRUE)
-	# spi_data[["scale_24"]][is.infinite(spi_data[["scale_24"]]) & spi_data[["scale_24"]] < 0] = min(spi_data[["scale_24"]][!is.infinite(spi_data[["scale_24"]])], na.rm = TRUE)
 	rownames(spi_data[["scale_3"]]) <- rownames(file_data$data)
-	# rownames(spi_data[["scale_9"]]) <- rownames(file_data$data)
 	rownames(spi_data[["scale_12"]]) <- rownames(file_data$data)
-	# rownames(spi_data[["scale_24"]]) <- rownames(file_data$data)
 
 	################ Código Sergio para generar arrays y hacer figuras de tendencia
 	mkTrend_pval <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_pval)
@@ -289,14 +277,14 @@ calculate_statistics_data <- function(file_data){
 	dry_spell_trend_data <- list() # fergus:scale 3 tiene NAs porque SPI 3 tiene NAs????
 	dry_spell_trend_data[["scale_3"]] <- t(apply(spi_data[["scale_3"]], c(2), dry_spell_trend, threshold = 0))
 	colnames(dry_spell_trend_data[["scale_3"]]) <- c("p.dur", "p.mag", "trend.dur", "trend.mag")
-	# dry_spell_trend_data[["scale_9"]] <- t(apply(spi_data[["scale_9"]], c(2), dry_spell_trend, threshold = 0))
-	# colnames(dry_spell_trend_data[["scale_9"]]) <- c("p.dur", "p.mag", "trend.dur", "trend.mag")
 	dry_spell_trend_data[["scale_12"]] <- t(apply(spi_data[["scale_12"]][c(13:dim(spi_data[["scale_12"]])[1]), ], c(2), dry_spell_trend, threshold = 0))
 	colnames(dry_spell_trend_data[["scale_12"]]) <- c("p.dur", "p.mag", "trend.dur", "trend.mag")
-	# dry_spell_trend_data[["scale_24"]] <- t(apply(spi_data[["scale_24"]][c(25:dim(spi_data[["scale_12"]])[1]), ], c(2), dry_spell_trend, threshold = 0))
-	# colnames(dry_spell_trend_data[["scale_24"]]) <- c("p.dur", "p.mag", "trend.dur", "trend.mag")
 
-	mobile_trends_data <- calc_data_year_month_station(data = file_data$data, calc_function = mobile_trends)
+	if(calc_mobile_trends_data){ #Solo lo calculamos para algunas fechas
+		mobile_trends_data <- calc_data_year_month_station(data = file_data$data, calc_function = mobile_trends)
+	}else{
+		mobile_trends_data <- NA
+	}
 
 	return(list(coor = file_data$coor, average = average, pval = mkTrend_pval, trend = mkTrend_slp, percentage = percentage, dry_spell_trend_data = dry_spell_trend_data, mobile_trends_data = mobile_trends_data))
 }
@@ -315,8 +303,13 @@ calculate_statistics <- function(data){
 	i_ini <- i_inis[length(i_inis)]
 	for(i_ini in i_inis){
     	file_data <- data[[paste0("start_", i_ini)]]
+  		if(i_ini <= 1900){ # Calcular mobile_trends_data es muy lento, lo haremos solo en algunos casos
+    		calc_mobile_trends_data = TRUE
+			}else{
+  			calc_mobile_trends_data = FALSE
+  		}
     	if(sum(!is.na(file_data)) > 0){
-	    	data_save[[paste0("start_", i_ini)]] <- calculate_statistics_data(file_data)
+	    	data_save[[paste0("start_", i_ini)]] <- calculate_statistics_data(file_data, calc_mobile_trends_data)
     	}
   	}
 	saveRDS(data_save, file = "mediterranean_calculations.rds")	
@@ -352,31 +345,3 @@ main_mediterranean_calculations <- function(file_data, file_coor, max_dist){
 	# load("main_mediterranean_calculations.RData")
 	return(data_statistics)
 }
-
-# # Pruebas
-# prueba <- function(){
-# 	# 01/Dec/1942 X121700 - originalmente tenía dato, correlaciones muy bajas pero no tiene 0s, y con las que tiene tiene muchos NAs
-# 	fill_data$data["01/Dec/1942", "X121700"]
-# 	# [1] NA
-# 	data_ori["01/Dec/1942", "X121700"]
-# 	# [1] 357
-# 	data["01/Dec/1942", "X121700"]
-# 	# [1] 357
-# 	control_data$data["01/Dec/1942", "X121700"]
-# 	# [1] NA
-
-# 	which(all_series=="X121700")
-
-# 	#####################################
-
-# 	# Na desde el principio, 194 series usadas de 1070, todas NA en esa fecha
-# 	# 74 NAS, 67 0s, 12 no 0s)
-
-# 	fill_data$data["01/Sep/1923", "X321850"]
-# 	control_data$data["01/Sep/1923", "X321850"]
-# 	data_ori["01/Sep/1923", "X321850"]
-# 	# NA
-
-# 	#####################################
-
-# }

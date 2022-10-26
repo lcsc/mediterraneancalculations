@@ -1,7 +1,7 @@
 Package: mediterraneancalculations
 Type: Package
-Version: 0.1-4
-Date: 2022-10-05
+Version: 0.1-5
+Date: 2022-10-26
 Title: Mediterranean Calculations
 Author: Sergio M. Vicente-Serrano [aut], Fergus Reig-Gracia [aut, cre]
 Maintainer: Fergus Reig-Gracia <fergusrg@gmail.com>
@@ -12,11 +12,17 @@ License: GPL (>= 3)
 URL: https://lcsc.csic.es
 LazyLoad: no
 Encoding: UTF-8
-Suggests: MASS, rmarkdown, knitr, testthat (>= 3.0.0)
+Suggests: 
+    MASS,
+    rmarkdown,
+    knitr,
+    testthat (>= 3.0.0)
 NeedsCompilation: no
-Packaged: 2022-10-05 07:43:23 UTC; fergus
+Packaged: 2022-10-26 09:38:24 UTC; freig
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
-Collate: 'functions-mediterranean-calculations.r'
-        'mediterranean-calculations.r' 'mediterraneancalculations.R'
-        'mediterraneancalculationsNews.R'
+Collate: 
+    'functions-mediterranean-calculations.r'
+    'mediterranean-calculations.r'
+    'mediterraneancalculations.R'
+    'mediterraneancalculationsNews.R'

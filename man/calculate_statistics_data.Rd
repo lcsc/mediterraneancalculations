@@ -10,10 +10,12 @@ Serie promedio de todo el país
 SPI a escalas 3, 12, y 24 de cada serie, importante que sea imposible invertir las operaciones
 Código Sergio para generar arrays y hacer figuras de tendencia}
 \usage{
-calculate_statistics_data(file_data)
+calculate_statistics_data(file_data, calc_mobile_trends_data = TRUE)
 }
 \arguments{
 \item{file_data}{ruta del fichero de datos}
+
+\item{calc_mobile_trends_data}{Calculamos mobile_trends_data o no}
 }
 \value{
 None

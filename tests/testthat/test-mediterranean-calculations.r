@@ -151,7 +151,6 @@ test_that("near_correlations", {
   control_data$data[11, 3] <- -1
   control_data$data[11, 4] <- 1
   control_data$data[11, 5] <- 0
-  # print(near_correlations)
   data_result <- near_correlations(control_data$data, control_data$coor, max_dist = max_dist)
   expect_equivalent(is.na(NA), is.na(data_result$Aug[3, 3]), info = deparse(sys.calls()[[sys.nframe()]]))
   expect_equivalent(-1, data_result$Aug[1, 3], info = deparse(sys.calls()[[sys.nframe()]]))
@@ -357,7 +356,6 @@ test_that("second_data_fill_data", {
   expect_equivalent(file_data$coor[c("X3", "X5"), ], data$coor)
 
   # Estación solitaria
-  # file_data$data[12, "X5"] <- NA
   file_data$coor["X5", ] <- c(45, 90)
   data <- second_data_fill_data(file_data)
   expect_equivalent(file_data$coor[c("X3", "X5"), ], data$coor)
@@ -386,7 +384,6 @@ test_that("dry_spell_trend", {
   set.seed(42)
   file_data$data[, 3] <- sample(c(dim(file_data$data)[1]:1))/400 - 2
   data <- dry_spell_trend(index = file_data$data[, 3], threshold = 0)
-  # expect_equivalent(round(data, 5), c(0.67246, 0.88021, 0, -7e-05)) # Función de Sergio, comprobamos que mantiene resultado
   expect_equivalent(round(data, 3), c(0.265, 0.137, 0, 0)) # Función de Sergio, comprobamos que mantiene resultado
 })
 
@@ -432,8 +429,9 @@ test_that("calc_data_year_month_station", {
 #'
 test_that("calc_mkTrend_pval", {
   file_data <- generate_mock_data_coor()
-  data <- calc_mkTrend_pval(data = file_data$data[, 2])
-  expect_equivalent(round(data, 5), 0.00131) # Función de Sergio, comprobamos que mantiene resultado
+  ok_data <- calc_data_year(data = file_data$data)
+  data <- calc_mkTrend_pval(data = ok_data[, 2])
+  expect_equivalent(round(data, 5), 0.01054) # Función de Sergio, comprobamos que mantiene resultado
 })
 
 #' testea la función snht
@@ -482,6 +480,41 @@ test_that("fill_unfillable_station", {
   expect_equivalent(sum(is.na(data$data[, 5])), 0) 
 })
 
+#' testea la función calc_percentage
+#'
+#' @return None
+#' @export
+#'
+test_that("calc_percentage", {
+  file_data <- generate_mock_data_coor()
+  ok_data <- calc_data_year(data = file_data$data)
+  data <- calc_percentage(datos = ok_data[, "X4"])
+  expect_equivalent(data, 0) # Función de Sergio, comprobamos que mantiene resultado
+})
+
+#' testea la función calc_mkTrend_slp
+#'
+#' @return None
+#' @export
+#'
+test_that("calc_mkTrend_slp", {
+  file_data <- generate_mock_data_coor()
+  ok_data <- calc_data_year(data = file_data$data)
+  data <- calc_mkTrend_slp(data = ok_data[, 2])
+  expect_equivalent(round(data, 5), 0) # Función de Sergio, comprobamos que mantiene resultado
+})
+
+#' testea la función read_years
+#'
+#' @return None
+#' @export
+#'
+test_that("read_years", {
+  file_data <- generate_mock_data_coor()
+  data <- read_years(txt = rownames(file_data$data))
+  expect_equivalent(data[123], 2011) 
+})
+
 # #' testea la función main_mediterranean_calculations
 # #'
 # #' @return None
@@ -522,7 +555,6 @@ test_that("fill_unfillable_station", {
 
 # })
 
-# calc_mkTrend_slp
 
 # #' tes pruebas
 # #'
