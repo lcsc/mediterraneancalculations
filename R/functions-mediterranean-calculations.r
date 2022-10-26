@@ -66,7 +66,7 @@ i_years <- array(c(80, 80, 80, 80, 60, 40, 30), length(i_inis), dimnames = list(
 #'
 order_data <- function(data){
   data_order <- apply(data, c(1), order, na.last = NA)
-  if(class(data_order)[1] == "matrix"){
+  if("matrix" %in% class(data_order)){
     data_order <- as.list(as.data.frame(data_order))
   }
   return(data_order)
@@ -162,7 +162,8 @@ apply_ecdf <- function(data){
 near_correlations <- function(data, coor, max_dist){
   # Pasar coordenadas de grados a metros
   points_data <- as.data.frame(coor)
-  sp::coordinates(points_data) <- c('lat', 'lon')
+  # sp::coordinates(points_data) <- c('lat', 'lon')
+  sp::coordinates(points_data) <- c('lon', 'lat')
   sp::proj4string(points_data) <- crs84
   # plot(world)
   # plot(points_data, add = TRUE)
@@ -203,7 +204,8 @@ near_correlations <- function(data, coor, max_dist){
 near_estations <- function(data, coor, max_dist){
   # Pasar coordenadas de grados a metros
   points_data <- as.data.frame(coor)
-  sp::coordinates(points_data) <- c('lat', 'lon')
+  # sp::coordinates(points_data) <- c('lat', 'lon')
+  sp::coordinates(points_data) <- c('lon', 'lat')
   sp::proj4string(points_data) <- crs84
   # plot(world)
   # plot(points_data, add = TRUE)
@@ -227,7 +229,8 @@ near_estations <- function(data, coor, max_dist){
 
 #' Control de calidad
 #' Estaciones con menos de 20 años de datos retirar
-#' Usando las 10 más correlacionadas a menos de 200 km, desechar si promedio de percentil se diferencia en más de 0.6
+#' Usando las 10 más cercanas a menos de 200 km, desechar si promedio de percentil se diferencia en más de 0.6 
+#' o en más de 0.5 para datos 0
 #'
 #' @param data datos  
 #' @param coor coordenadas
@@ -269,7 +272,7 @@ quality_control <- function(data, coor, max_dist){
 
   months <- unique(substr(rownames(data), 4, 6))
   # Para cada mes
-  i_month <- months[1]
+  i_month <- months[9]
   for(i_month in months){
     # Seleccionamos los datos de mes
     data_percent_month <- data_percent[grepl(i_month, rownames(data_percent)), ]
@@ -315,6 +318,45 @@ overlap_station <- function(control_data){
     overlap[station, ] <- apply(aux_overlap, c(2), sum)
   }
   return(overlap)
+}
+
+#' En los países que no salgan series, vamos a permitir que hasta tres años de datos se rellenen con la media. Es decir, pongamos que si para un periodo concreto 1900-2020 no salen series pero saldrían porque hay un máximo de tres años de datos (es decir 36 meses), rellenamos esos datos con el promedio de los 15 datos más cercanos en el tiempo. Por ejemplo, si es 1900, pues con la media de 1900-1915, si es 1915, pues con la media de 1907 a 1922. Seimpre y cuando esos cinco años no estén entre 2015 y 2020 o en los cinco primeros años de las series, que entonces tiramos la serie pues podría afectar a las tendencias.
+#' Si las series son las de 1980-2020, lo mismo, pero dejamos solamente dos años de datos perdidos.
+#'
+#' @param data datos de las estaciones que se intentarán rellenar
+#' @param fillable_years años rellenables con la media mensual de la propia estación
+#'
+#' @return None
+#' @export
+#'
+fill_unfillable_station  <- function(data, fillable_years){
+
+  # fillable_data <- data$data[, apply(is.na(data$data), c(2), sum) > 0]
+  # fillable_data <- fillable_data[, apply(is.na(fillable_data), c(2), sum) <= fillable_years]
+  # fillable_data <- fillable_data[, apply(is.na(fillable_data[1:60, ]), c(2), sum) == 0]
+  # fillable_data <- fillable_data[, apply(is.na(fillable_data[(dim(fillable_data)[1]-60+1):dim(fillable_data)[1], ]), c(2), sum) == 0]
+
+  fillable_data <- data$data[, apply(is.na(data$data), c(2), sum) > 0 & apply(is.na(data$data), c(2), sum) <= fillable_years & apply(is.na(data$data[1:60, ]), c(2), sum) == 0 & apply(is.na(data$data[(dim(data$data)[1]-60+1):dim(data$data)[1], ]), c(2), sum) == 0]
+
+  if(!is.null(dim(fillable_data))){
+    station <- colnames(fillable_data)[1]
+    for(station in colnames(fillable_data)){
+      data_padding <- fillable_data[, station]
+      data_na <- which(is.na(fillable_data[, station]))
+      data_no_na <- which(!is.na(fillable_data[, station]))
+
+      idata_na <- data_na[1]
+      for(idata_na in data_na){
+        idata_no_na <- data_no_na[idata_na %% 12 == data_no_na %% 12]
+        # rellenamos con la media de los 10 datos más cercanos
+        idata_select_no_na <- idata_no_na[order(abs(idata_no_na - idata_na))][1:10]
+
+        fillable_data[idata_na, station] <- mean(data_padding[idata_select_no_na])
+      }
+    }
+    data$data[, colnames(fillable_data)] <- fillable_data
+  }
+  return(data)
 }
 
 #' Rellenado mensual de las series
@@ -471,7 +513,7 @@ fill_one_series <- function(series, other_series){
 save_data <- function(data_ori, control_data, folder_name = NA){
   data_return <- list()
 
-  i_ini <- i_inis[1]
+  i_ini <- i_inis[length(i_inis)]
   for(i_ini in i_inis){
     i_year <- i_years[as.character(i_ini)]
     year_ini <- max(i_ini, as.numeric(substr(rownames(data_ori)[1], 8, 11)))
@@ -578,6 +620,8 @@ read_data <- function(file_data, file_coor){
     rownames(data_ori) <- as.character(chron::chron(paste0("01", "/", data_ori[, "month"], "/", data_ori[, "year"]), format = c(dates = "d/m/y", times = "h:m:s"), out.format = time_format))
     data_ori["month"] <- NULL
     data_ori["year"] <- NULL
+
+    data_ori[data_ori < 0] <- NA
 
     # Revisión de fechas
     dates <- seq(chron::chron(rownames(data_ori)[1], format = time_format, out.format = time_format), chron::chron(rownames(data_ori)[dim(data_ori)[1]], format = time_format, out.format = time_format), by = "month")
@@ -872,7 +916,7 @@ mkTrend <- function(x, ci = .95) {
   sig <- stats::qnorm((1 + ci) / 2) / sqrt(n)
   rof <- rep(NA, length(ro)) 
   for (i in 1:(length(ro))) {
-   if(ro[i] > sig || ro[i] < -sig) {
+   if(sum(!is.na(ro[i])) > 0 && (ro[i] > sig || ro[i] < -sig)) {
     rof[i] <- ro[i]
    } else {
     rof[i] <- 0
@@ -958,6 +1002,7 @@ dry_spell_trend <- function(index, threshold) {
 
   if(sum(!is.na(index)) > 0){
     years <- as.numeric(substr(names(index), 8, 11))
+
     n <- length(index)
     below <- which(index < threshold)
     above <- which(index >= threshold)
@@ -1011,7 +1056,8 @@ dry_spell_trend <- function(index, threshold) {
     if(dim(series_dry_ori)[1] > 0){
       series_dry_aux <- as.matrix(stats::aggregate(series_dry_ori, by = list("year" = series_dry_ori$year), FUN = sum))
       series_dry[as.character(series_dry_aux[, c("year")]), c("duration", "magnitude")] <- as.numeric(series_dry_aux[, c("duration", "magnitude")])
-    }    
+    }
+    series_dry[, c("duration", "magnitude")] <- series_dry[, c("duration", "magnitude")] + 1
     if(dim(series_dry_ori)[1] > 2){
       # a.1 <- as.vector(Kendall::Kendall(series_dry[,1], series_dry[,2])$sl)
       a.1 <- calc_mkTrend_pval(series_dry[, 2])
@@ -1021,20 +1067,12 @@ dry_spell_trend <- function(index, threshold) {
       }
     } 
     if(dim(series_dry_ori)[1] > 0){
-      # lm.1 <- stats::lm(series_dry[,2] ~ series_dry[,1])
-      # kk.1 <- as.data.frame(stats::coef(lm.1))[2,]
-      # kk.1 <- mkTrend(series_dry[, 2])$"Sen's Slope"
-      # a.3 <- kk.1 * 10
-      theil_sen_regression_data2 <- as.vector(series_dry_ori[, 2])
-      theil_sen_regression_data1 <- as.vector(series_dry_ori[, 1])
+      theil_sen_regression_data2 <- as.vector(series_dry[, 2])
+      theil_sen_regression_data1 <- as.vector(series_dry[, 1])
       a.3 <- RobustLinearReg::theil_sen_regression(theil_sen_regression_data2 ~ theil_sen_regression_data1)$coefficients[2]
       if(sum(is.infinite(series_dry)) <= 0){
-        # lm.2 <- stats::lm(series_dry[,3] ~ series_dry[,1])
-        # kk.2 <- as.data.frame(stats::coef(lm.2))[2,]
-        # kk.2 <- mkTrend(series_dry[, 3])$"Sen's Slope"
-        # a.4 <- kk.2 * 10
-        theil_sen_regression_data3 <- as.vector(series_dry_ori[, 3])
-        theil_sen_regression_data1 <- as.vector(series_dry_ori[, 1])
+        theil_sen_regression_data3 <- as.vector(series_dry[, 3])
+        theil_sen_regression_data1 <- as.vector(series_dry[, 1])
         a.4 <- RobustLinearReg::theil_sen_regression(theil_sen_regression_data3 ~ theil_sen_regression_data1)$coefficients[2]
       }
     }

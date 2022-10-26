@@ -30,13 +30,14 @@ max_dist <- 200 # Máxima distancia entre 2 estaciones para usar una para evalua
 #' genera un data asociado a un coor que sirve en varios tests
 #'
 #' @param i_year año de comienzo de los datos
+#' @param ndata número de estaciones
 #'
 #' @return list de data y coor
 #' @export
 #'
-generate_mock_data_coor <- function(i_year = 2001){
+generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
   times <- as.character(seq(chron::chron(paste0("01/Jan/", i_year), format = time_format, out.format = time_format), chron::chron("21/Dec/2021", format = time_format, out.format = time_format), by = "month"))
-  data <- array(1000, dim = c(length(times), 5))
+  data <- array(1000, dim = c(length(times), ndata))
   colnames(data) <- paste0("X", c(1:dim(data)[2]))
   rownames(data) <- times
   data[12, 1] <- NA
@@ -55,10 +56,24 @@ generate_mock_data_coor <- function(i_year = 2001){
   colnames(coor) <- c("lat", "lon")
 
   coor[1, ] <- c(1, 1)
-  coor[2, ] <- c(1.1, 1)
-  coor[3, ] <- c(1, 1.1)
+  coor[2, ] <- c(1, 1.1)
+  coor[3, ] <- c(1.1, 1)
   coor[4, ] <- c(1.1, 1.1)
-  coor[5, ] <- c(0.9, 1)
+  coor[5, ] <- c(1, 0.9)
+
+  # Estación solitaria
+  if(ndata > 5){
+    data[, 6] <- data[, 5]
+    coor[6, ] <- c(1.2, 1.2)
+  }  
+  if(ndata > 6){  
+    data[, 7] <- data[, 5]
+    coor[7, ] <- c(1.3, 1.3)
+  }
+  if(ndata > 7){
+    data[, 8] <- data[, 5]
+    coor[8, ] <- c(90, 45)
+  }
 
   return(list(data = data, coor = coor))
 }
@@ -136,7 +151,7 @@ test_that("near_correlations", {
   control_data$data[11, 3] <- -1
   control_data$data[11, 4] <- 1
   control_data$data[11, 5] <- 0
-
+  # print(near_correlations)
   data_result <- near_correlations(control_data$data, control_data$coor, max_dist = max_dist)
   expect_equivalent(is.na(NA), is.na(data_result$Aug[3, 3]), info = deparse(sys.calls()[[sys.nframe()]]))
   expect_equivalent(-1, data_result$Aug[1, 3], info = deparse(sys.calls()[[sys.nframe()]]))
@@ -150,9 +165,18 @@ test_that("near_correlations", {
 test_that("near_estations", {
   control_data <- generate_mock_data_coor()
   control_data$coor[5, ] <- c(50, 50)
-  data_result <- near_estations(control_data$data, control_data$coor, max_dist = max_dist)
+  data_result <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
   expect_equivalent(0, length(data_result$X5), info = deparse(sys.calls()[[sys.nframe()]]))
   expect_equivalent(3, length(data_result$X1), info = deparse(sys.calls()[[sys.nframe()]]))
+
+  control_data$coor[1, ] <- c(1, 1)
+  control_data$coor[2, ] <- c(2, 1)
+  control_data$coor[3, ] <- c(3, 1)
+  control_data$coor[4, ] <- c(4, 1)
+  control_data$coor[5, ] <- c(5, 1)
+  data_result <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
+  expect_equivalent(4, length(data_result$X5), info = deparse(sys.calls()[[sys.nframe()]]))
+  expect_equivalent(c(2, 3, 4, 5), data_result$X1, info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
 #' testea la función quality_control
@@ -170,9 +194,12 @@ test_that("quality_control", {
   control_data$data[31, 4] <- 1
   control_data$data[31, 5] <- 0
 
+  control_data$data[32, 5] <- 0
+
   data_result <- control_data$data[, c(1, 3, 4, 5)]
   data_result[19, 1] <- NA
   data_result[20, 2] <- NA
+  data_result[32, 4] <- NA
 
   coor_result <- control_data$coor[colnames(data_result), ]
 
@@ -180,6 +207,13 @@ test_that("quality_control", {
 
   expect_equivalent(result$data, data_result, info = deparse(sys.calls()[[sys.nframe()]]))
   expect_equivalent(result$coor, coor_result, info = deparse(sys.calls()[[sys.nframe()]]))
+
+  # Estación solitaria
+  control_data$data[12, "X5"] <- NA
+  control_data$coor["X5", ] <- c(45, 90)
+  result <- quality_control(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
+
+  expect_equivalent(result$data[, "X5"], control_data$data[, "X5"], info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
 #' testea la función overlap_station
@@ -286,6 +320,12 @@ test_that("alexanderson_homogenize_data", {
   file_data$data[c(101:dim(file_data$data)[1]), 1] <- c(-101:-dim(file_data$data)[1])
   data <- alexanderson_homogenize_data(file_data)
   expect_lt(data[1, 1], 0)
+
+  # Estación solitaria
+  file_data$data[12, "X5"] <- NA
+  file_data$coor["X5", ] <- c(45, 90)
+  data <- alexanderson_homogenize_data(file_data)
+  expect_lt(data[1, 1], 0)
 })
 
 #' testea la función save_parameters
@@ -315,6 +355,12 @@ test_that("second_data_fill_data", {
   file_data$data[200, "X5"] <- NA # Aug
   data <- second_data_fill_data(file_data)
   expect_equivalent(file_data$coor[c("X3", "X5"), ], data$coor)
+
+  # Estación solitaria
+  # file_data$data[12, "X5"] <- NA
+  file_data$coor["X5", ] <- c(45, 90)
+  data <- second_data_fill_data(file_data)
+  expect_equivalent(file_data$coor[c("X3", "X5"), ], data$coor)
 })
 
 #' testea la función calculate_statistics_data
@@ -339,8 +385,9 @@ test_that("dry_spell_trend", {
   file_data$data[is.na(file_data$data)] <- 35
   set.seed(42)
   file_data$data[, 3] <- sample(c(dim(file_data$data)[1]:1))/400 - 2
-  data <- dry_spell_trend(index = file_data$data[, 3], threshold = -1.28)
-  expect_equivalent(round(data, 5), c(0.67246, 0.88021, 0, -7e-05)) # Función de Sergio, comprobamos que mantiene resultado
+  data <- dry_spell_trend(index = file_data$data[, 3], threshold = 0)
+  # expect_equivalent(round(data, 5), c(0.67246, 0.88021, 0, -7e-05)) # Función de Sergio, comprobamos que mantiene resultado
+  expect_equivalent(round(data, 3), c(0.265, 0.137, 0, 0)) # Función de Sergio, comprobamos que mantiene resultado
 })
 
 #' testea la función mobile_trends
@@ -410,6 +457,70 @@ test_that("calc_data_year", {
   data <- calc_data_year(file_data$data)
   expect_equivalent(data["year_2001", "X3"], sum(file_data$data[grepl("2001", rownames(file_data$data)), "X3"])) 
 })
+
+#' testea la función fill_unfillable_station
+#'
+#' @return None
+#' @export
+#'
+test_that("fill_unfillable_station", {
+  file_data <- generate_mock_data_coor(i_year = 1980)
+  fillable_years <- 4
+  file_data$data[100, 1] <- NA
+  file_data$data[140, 1] <- NA
+  file_data$data[160, 1] <- NA
+  file_data$data[1, 2] <- NA
+  file_data$data[140, 3] <- NA
+  file_data$data[160, 3] <- NA
+  file_data$data[140, 4] <- NA
+  file_data$data[160, 5] <- NA
+  data <- fill_unfillable_station(data = file_data, fillable_years = fillable_years)
+  expect_equivalent(sum(is.na(file_data$data[, 1])), sum(is.na(data$data[, 1])))
+  expect_equivalent(sum(is.na(file_data$data[, 2])), sum(is.na(data$data[, 2])))
+  expect_equivalent(sum(is.na(data$data[, 3])), 0) 
+  expect_equivalent(sum(is.na(data$data[, 4])), 0) 
+  expect_equivalent(sum(is.na(data$data[, 5])), 0) 
+})
+
+# #' testea la función main_mediterranean_calculations
+# #'
+# #' @return None
+# #' @export
+# #'
+# test_that("main_mediterranean_calculations", {
+#   control_data <- generate_mock_data_coor(i_year = 1950, ndata = 8) 
+#   i_ini <- "1930"
+#   folder_name <- "test_result"
+#   save_csvs(i_ini, folder_name, data_save = control_data$data, coor_save = control_data$coor)
+
+#   file_data <- "test_result/data_1930.csv"
+#   file_coor <- "test_result/coor_1930.csv"
+
+#   main_mediterranean_calculations(file_data = file_data, file_coor = file_coor, max_dist = max_dist)
+
+#   # sum(is.na(control_data$data[,"X5"]))
+
+# })
+
+# #' testea la función main_mediterranean_calculations con 6 datasets
+# #'
+# #' @return None
+# #' @export
+# #'
+# test_that("main_mediterranean_calculations", {
+#   control_data <- generate_mock_data_coor(i_year = 1950, ndata = 6) 
+#   i_ini <- "1930"
+#   folder_name <- "test_result"
+#   save_csvs(i_ini, folder_name, data_save = control_data$data, coor_save = control_data$coor)
+
+#   file_data <- "test_result/data_1930.csv"
+#   file_coor <- "test_result/coor_1930.csv"
+
+#   main_mediterranean_calculations(file_data = file_data, file_coor = file_coor, max_dist = max_dist)
+
+#   # sum(is.na(control_data$data[,"X5"]))
+
+# })
 
 # calc_mkTrend_slp
 
