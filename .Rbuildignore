@@ -1,0 +1,9 @@
+^\.travis\.yml$
+.gitignore
+.gitlab-ci.yml
+.travis.yml
+.git
+LICENSE
+^.*\.Rproj$
+^\.Rproj\.user$
+..Rcheck
