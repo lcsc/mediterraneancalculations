@@ -502,6 +502,32 @@ test_that("calc_mkTrend_slp", {
   ok_data <- calc_data_year(data = file_data$data)
   data <- calc_mkTrend_slp(data = ok_data[, 2])
   expect_equivalent(round(data, 5), 0) # Función de Sergio, comprobamos que mantiene resultado
+
+
+  # Prueba pedida por Sergio
+  file_data <- generate_mock_data_coor()
+
+  file_data$data[, 1] <- c(1:dim(file_data$data)[1])
+  file_data$data[, 2] <- rep(1, dim(file_data$data)[1])
+  file_data$data[, 3] <- c(dim(file_data$data)[1]:1)
+  ok_data <- calc_data_year(data = file_data$data)
+  data1 <- calc_mkTrend_slp(data = ok_data[, 1])
+  data2 <- calc_mkTrend_slp(data = ok_data[, 2])
+  data3 <- calc_mkTrend_slp(data = ok_data[, 3])
+
+  expect_false(data1 == 1)
+  expect_true(data2 == 0)
+  expect_false(data3 == -1)
+
+  ok_data[, 1] <- c(1:dim(ok_data)[1])
+  ok_data[, 2] <- rep(1, dim(ok_data)[1])
+  ok_data[, 3] <- c(dim(ok_data)[1]:1)
+  data1 <- calc_mkTrend_slp(data = ok_data[, 1])
+  data2 <- calc_mkTrend_slp(data = ok_data[, 2])
+  data3 <- calc_mkTrend_slp(data = ok_data[, 3])
+  expect_true(data1 == 1)
+  expect_true(data2 == 0)
+  expect_true(data3 == -1)
 })
 
 #' testea la función read_years

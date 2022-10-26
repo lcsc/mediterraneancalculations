@@ -51,9 +51,13 @@ cdf_functions <- list(exp = lmom::cdfexp, gam = lmom::cdfgam, gev = lmom::cdfgev
 
 alexanderson_folder <- "results"
 
-i_inis <- c(1870, 1880, 1890, 1900, 1930, 1950, 1980)
+# i_inis <- c(1870, 1880, 1890, 1900, 1930, 1950, 1980)
+# i_end <- 2020
+# i_years <- array(c(80, 80, 80, 80, 60, 40, 30), length(i_inis), dimnames = list(i_inis))
+
+i_inis <- c(1870, 1900, 1930, 1950, 1980)
 i_end <- 2020
-i_years <- array(c(80, 80, 80, 80, 60, 40, 30), length(i_inis), dimnames = list(i_inis))
+i_years <- array(c(80, 80, 60, 40, 30), length(i_inis), dimnames = list(i_inis))
 
 ####################
 
@@ -1102,11 +1106,9 @@ mobile_trends <- function(datos) {
         if(sum(datos[i:aa]) != 0){
           mkTrend_data <- mkTrend(datos[i:aa])
           matriz_p[bb, i] <- mkTrend_data$p.value
-          # matriz_s[bb, i] <- as.data.frame(stats::lm(datos[i:aa] ~ anos[i:aa])$coef)[2, ]
           theil_sen_regression_datos <- datos[i:aa]
           theil_sen_regression_anos <- anos[i:aa]
           matriz_s[bb, i] <- RobustLinearReg::theil_sen_regression(theil_sen_regression_datos ~ theil_sen_regression_anos)$coefficients[2]
-          # matriz_s[bb, i] <- mkTrend_data$"Sen's Slope"
           matriz_per[bb, i] <- calc_percentage(datos[i:aa])
         }else{
           matriz_p[bb, i] <- 1
