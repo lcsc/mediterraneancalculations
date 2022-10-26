@@ -1,0 +1,2 @@
+#' @details Info
+"_PACKAGE"
