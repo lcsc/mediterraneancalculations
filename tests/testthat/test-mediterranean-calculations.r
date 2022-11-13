@@ -80,6 +80,17 @@ generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
 
 # ############################################################
 
+#' testea la función read_years
+#'
+#' @return None
+#' @export
+#'
+test_that("read_years", {
+  file_data <- generate_mock_data_coor()
+  data <- read_years(txt = rownames(file_data$data))
+  expect_equivalent(data[123], 2011) 
+})
+
 #' testea la función order_data
 #'
 #' @return None
@@ -235,23 +246,28 @@ test_that("overlap_station", {
   expect_equivalent(data_result, data_ok, info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
-#' testea la función fill_one_series
+#' testea la función fill_unfillable_station
 #'
 #' @return None
 #' @export
 #'
-test_that("fill_one_series", {
-  info = deparse(sys.calls()[[sys.nframe()]])
-  control_data <- generate_mock_data_coor()
-
-  control_data$data[12, 1] <- NA
-  control_data$data[24, 2] <- NA
-  control_data$data[1, 3] <- -NA
-  control_data$data[30, 4] <- NA
-  control_data$data[60, 5] <- NA
-
-  data_result <- fill_one_series(series = control_data$data[, 1], other_series = control_data$data[, -1])
-  expect_equivalent(sum(is.na(data_result)), 0, info = info)
+test_that("fill_unfillable_station", {
+  file_data <- generate_mock_data_coor(i_year = 1980)
+  fillable_years <- 4
+  file_data$data[100, 1] <- NA
+  file_data$data[140, 1] <- NA
+  file_data$data[160, 1] <- NA
+  file_data$data[1, 2] <- NA
+  file_data$data[140, 3] <- NA
+  file_data$data[160, 3] <- NA
+  file_data$data[140, 4] <- NA
+  file_data$data[160, 5] <- NA
+  data <- fill_unfillable_station(data = file_data, fillable_years = fillable_years)
+  expect_equivalent(sum(is.na(file_data$data[, 1])), sum(is.na(data$data[, 1])))
+  expect_equivalent(sum(is.na(file_data$data[, 2])), sum(is.na(data$data[, 2])))
+  expect_equivalent(sum(is.na(data$data[, 3])), 0) 
+  expect_equivalent(sum(is.na(data$data[, 4])), 0) 
+  expect_equivalent(sum(is.na(data$data[, 5])), 0) 
 })
 
 #' testea la función fill_series
@@ -273,6 +289,26 @@ test_that("fill_series", {
   expect_lt(sum(is.na(data_result$data)), sum(is.na(control_data$data)), label = info)
   expect_equivalent(sum(is.na(data_result$data)), 0, info = info)
 })
+
+#' testea la función fill_one_series
+#'
+#' @return None
+#' @export
+#'
+test_that("fill_one_series", {
+  info = deparse(sys.calls()[[sys.nframe()]])
+  control_data <- generate_mock_data_coor()
+
+  control_data$data[12, 1] <- NA
+  control_data$data[24, 2] <- NA
+  control_data$data[1, 3] <- -NA
+  control_data$data[30, 4] <- NA
+  control_data$data[60, 5] <- NA
+
+  data_result <- fill_one_series(series = control_data$data[, 1], other_series = control_data$data[, -1])
+  expect_equivalent(sum(is.na(data_result)), 0, info = info)
+})
+
 
 #' testea la función save_data
 #'
@@ -308,25 +344,6 @@ test_that("save_csvs_read_data", {
   expect_equivalent(as.data.frame(control_data$coor), data$coor)
 })
 
-#' testea la función alexanderson_homogenize_data
-#'
-#' @return None
-#' @export
-#'
-test_that("alexanderson_homogenize_data", {
-  file_data <- generate_mock_data_coor()
-  file_data$data[c(1:100), 1] <- c(1:100)
-  file_data$data[c(101:dim(file_data$data)[1]), 1] <- c(-101:-dim(file_data$data)[1])
-  data <- alexanderson_homogenize_data(file_data)
-  expect_lt(data[1, 1], 0)
-
-  # Estación solitaria
-  file_data$data[12, "X5"] <- NA
-  file_data$coor["X5", ] <- c(45, 90)
-  data <- alexanderson_homogenize_data(file_data)
-  expect_lt(data[1, 1], 0)
-})
-
 #' testea la función save_parameters
 #'
 #' @return None
@@ -341,85 +358,15 @@ test_that("save_parameters", {
   expect_equivalent(file.exists(file.path("test_result", "parameters.txt")), TRUE)
 })
 
-#' testea la función second_data_fill_data
+#' testea la función snht
 #'
 #' @return None
 #' @export
 #'
-test_that("second_data_fill_data", {
+test_that("snht", {
   file_data <- generate_mock_data_coor()
-  file_data$data[14, "X2"] <- NA
-  file_data$data[140, "X3"] <- NA
-  file_data$data[100, "X4"] <- NA
-  file_data$data[200, "X5"] <- NA # Aug
-  data <- second_data_fill_data(file_data)
-  expect_equivalent(file_data$coor[c("X3", "X5"), ], data$coor)
-
-  # Estación solitaria
-  file_data$coor["X5", ] <- c(45, 90)
-  data <- second_data_fill_data(file_data)
-  expect_equivalent(file_data$coor[c("X3", "X5"), ], data$coor)
-})
-
-#' testea la función calculate_statistics_data
-#'
-#' @return None
-#' @export
-#'
-test_that("calculate_statistics_data", {
-  file_data <- generate_mock_data_coor()
-  file_data$data[is.na(file_data$data)] <- 35
-  data <- calculate_statistics_data(file_data)
-  expect_equivalent(data$average[12], mean(file_data$data[12, ], na.rm = TRUE))
-})
-
-#' testea la función dry_spell_trend
-#'
-#' @return None
-#' @export
-#'
-test_that("dry_spell_trend", {
-  file_data <- generate_mock_data_coor(i_year = 1950)
-  file_data$data[is.na(file_data$data)] <- 35
-  set.seed(42)
-  file_data$data[, 3] <- sample(c(dim(file_data$data)[1]:1))/400 - 2
-  data <- dry_spell_trend(index = file_data$data[, 3], threshold = 0)
-  expect_equivalent(round(data, 3), c(0.265, 0.137, 0, 0)) # Función de Sergio, comprobamos que mantiene resultado
-})
-
-#' testea la función mobile_trends
-#'
-#' @return None
-#' @export
-#'
-test_that("mobile_trends", {
-  file_data <- generate_mock_data_coor(i_year = 1950)
-  file_data$data[is.na(file_data$data)] <- 35
-  data <- mobile_trends(datos = file_data$data[, 3])
-  expect_equivalent(dim(data$matriz_s)[1], 43)
-  expect_equivalent(round(mean(data$matriz_p, na.rm = TRUE), 5), 0.29986) # Función de Sergio, comprobamos que mantiene resultado
-})
-
-#' testea la función mkTrend
-#'
-#' @return None
-#' @export
-#'
-test_that("mkTrend", {
-  file_data <- generate_mock_data_coor(i_year = 1950)
-  data <- mkTrend(x = file_data$data[, 3])
-  expect_equivalent(round(mean(as.numeric(as.matrix(data)), na.rm = TRUE), 5), 27.8223) # Función de Sergio, comprobamos que mantiene resultado
-})
-
-#' testea la función calc_data_year_month_station
-#'
-#' @return None
-#' @export
-#'
-test_that("calc_data_year_month_station", {
-  file_data <- generate_mock_data_coor()
-  data <- unlist(calc_data_year_month_station(data = file_data$data, mean))
-  expect_equivalent(names(which(is.na(data))), c("year.X1", "summer.X1", "winter.X1", "Jun.X1", "Dec.X1"))
+  data <- snht(x = file_data$data, clevel = 95)$T0x
+  expect_equivalent(data, 96) # Función de Sergio, comprobamos que mantiene resultado
 })
 
 #' testea la función calc_mkTrend_pval
@@ -434,17 +381,6 @@ test_that("calc_mkTrend_pval", {
   expect_equivalent(round(data, 5), 0.01054) # Función de Sergio, comprobamos que mantiene resultado
 })
 
-#' testea la función snht
-#'
-#' @return None
-#' @export
-#'
-test_that("snht", {
-  file_data <- generate_mock_data_coor()
-  data <- snht(x = file_data$data, clevel = 95)$T0x
-  expect_equivalent(data, 96) # Función de Sergio, comprobamos que mantiene resultado
-})
-
 #' testea la función calc_data_year
 #'
 #' @return None
@@ -456,40 +392,26 @@ test_that("calc_data_year", {
   expect_equivalent(data["year_2001", "X3"], sum(file_data$data[grepl("2001", rownames(file_data$data)), "X3"])) 
 })
 
-#' testea la función fill_unfillable_station
+#' testea la función calc_data_year_month_station
 #'
 #' @return None
 #' @export
 #'
-test_that("fill_unfillable_station", {
-  file_data <- generate_mock_data_coor(i_year = 1980)
-  fillable_years <- 4
-  file_data$data[100, 1] <- NA
-  file_data$data[140, 1] <- NA
-  file_data$data[160, 1] <- NA
-  file_data$data[1, 2] <- NA
-  file_data$data[140, 3] <- NA
-  file_data$data[160, 3] <- NA
-  file_data$data[140, 4] <- NA
-  file_data$data[160, 5] <- NA
-  data <- fill_unfillable_station(data = file_data, fillable_years = fillable_years)
-  expect_equivalent(sum(is.na(file_data$data[, 1])), sum(is.na(data$data[, 1])))
-  expect_equivalent(sum(is.na(file_data$data[, 2])), sum(is.na(data$data[, 2])))
-  expect_equivalent(sum(is.na(data$data[, 3])), 0) 
-  expect_equivalent(sum(is.na(data$data[, 4])), 0) 
-  expect_equivalent(sum(is.na(data$data[, 5])), 0) 
+test_that("calc_data_year_month_station", {
+  file_data <- generate_mock_data_coor()
+  data <- unlist(calc_data_year_month_station(data = file_data$data, mean))
+  expect_equivalent(names(which(is.na(data))), c("year.X1", "summer.X1", "winter.X1", "Jun.X1", "Dec.X1"))
 })
 
-#' testea la función calc_percentage
+#' testea la función mkTrend
 #'
 #' @return None
 #' @export
 #'
-test_that("calc_percentage", {
-  file_data <- generate_mock_data_coor()
-  ok_data <- calc_data_year(data = file_data$data)
-  data <- calc_percentage(datos = ok_data[, "X4"])
-  expect_equivalent(data, 0) # Función de Sergio, comprobamos que mantiene resultado
+test_that("mkTrend", {
+  file_data <- generate_mock_data_coor(i_year = 1950)
+  data <- mkTrend(x = file_data$data[, 3])
+  expect_equivalent(round(mean(as.numeric(as.matrix(data)), na.rm = TRUE), 5), 27.8223) # Función de Sergio, comprobamos que mantiene resultado
 })
 
 #' testea la función calc_mkTrend_slp
@@ -530,16 +452,132 @@ test_that("calc_mkTrend_slp", {
   expect_true(data3 == -1)
 })
 
-#' testea la función read_years
+#' testea la función dry_spell_trend
 #'
 #' @return None
 #' @export
 #'
-test_that("read_years", {
-  file_data <- generate_mock_data_coor()
-  data <- read_years(txt = rownames(file_data$data))
-  expect_equivalent(data[123], 2011) 
+test_that("dry_spell_trend", {
+  file_data <- generate_mock_data_coor(i_year = 1950)
+  file_data$data[is.na(file_data$data)] <- 35
+  set.seed(42)
+  file_data$data[, 3] <- sample(c(dim(file_data$data)[1]:1))/400 - 2
+  data <- dry_spell_trend(index = file_data$data[, 3], threshold = 0)
+  expect_equivalent(round(data, 3), c(0.265, 0.137, 0, 0)) # Función de Sergio, comprobamos que mantiene resultado
 })
+
+#' testea la función mobile_trends
+#'
+#' @return None
+#' @export
+#'
+test_that("mobile_trends", {
+  file_data <- generate_mock_data_coor(i_year = 1950)
+  file_data$data[is.na(file_data$data)] <- 35
+  data <- mobile_trends(datos = file_data$data[, 3])
+  expect_equivalent(dim(data$matriz_s)[1], 43)
+  expect_equivalent(round(mean(data$matriz_p, na.rm = TRUE), 5), 0.29986) # Función de Sergio, comprobamos que mantiene resultado
+})
+
+#' testea la función calc_percentage
+#'
+#' @return None
+#' @export
+#'
+test_that("calc_percentage", {
+  file_data <- generate_mock_data_coor()
+  ok_data <- calc_data_year(data = file_data$data)
+  data <- calc_percentage(datos = ok_data[, "X4"])
+  expect_equivalent(data, 0) # Función de Sergio, comprobamos que mantiene resultado
+})
+
+##########################################################
+
+#' testea la función second_data_fill_data
+#'
+#' @return None
+#' @export
+#'
+test_that("second_data_fill_data", {
+  file_data <- generate_mock_data_coor()
+  file_data$data[14, "X2"] <- NA
+  file_data$data[140, "X3"] <- NA
+  file_data$data[100, "X4"] <- NA
+  file_data$data[200, "X5"] <- NA # Aug
+  data <- second_data_fill_data(file_data)
+  expect_equivalent(file_data$coor[c("X3", "X5"), ], data$coor)
+
+  # Estación solitaria
+  file_data$coor["X5", ] <- c(45, 90)
+  data <- second_data_fill_data(file_data)
+  expect_equivalent(file_data$coor[c("X3", "X5"), ], data$coor)
+})
+
+#' testea la función alexanderson_homogenize_data
+#'
+#' @return None
+#' @export
+#'
+test_that("alexanderson_homogenize_data", {
+  file_data <- generate_mock_data_coor()
+  file_data$data[c(1:100), 1] <- c(1:100)
+  file_data$data[c(101:dim(file_data$data)[1]), 1] <- c(-101:-dim(file_data$data)[1])
+  data <- alexanderson_homogenize_data(file_data)
+  expect_lt(data[1, 1], 0)
+
+  # Estación solitaria
+  file_data$data[12, "X5"] <- NA
+  file_data$coor["X5", ] <- c(45, 90)
+  data <- alexanderson_homogenize_data(file_data)
+  expect_lt(data[1, 1], 0)
+})
+
+#' testea la función calculate_statistics_data
+#'
+#' @return None
+#' @export
+#'
+test_that("calculate_statistics_data", {
+  file_data <- generate_mock_data_coor()
+  file_data$data[is.na(file_data$data)] <- 35
+  data <- calculate_statistics_data(file_data)
+  expect_equivalent(data$average[12], mean(file_data$data[12, ], na.rm = TRUE))
+})
+
+#' testea la función percentage_of_zeros
+#'
+#' @return None
+#' @export
+#'
+test_that("percentage_of_zeros", {
+  data <- c(1, 2, 3, 0, NA, NA, 0, 9, 0, 2, 0, 1)
+  percentage <- percentage_of_zeros(data)
+  expect_equivalent(percentage, 40)
+})
+
+#' testea la función delete_zero
+#'
+#' @return None
+#' @export
+#'
+test_that("delete_zero", {
+  file_data <- generate_mock_data_coor()
+
+  file_data$data[c(12:16), "X1"] <- 0
+  # percentage <- percentage_of_zeros(file_data$data[, "X1"])
+
+  file_data$data[c(12:16), "X2"] <- 0
+  file_data$data[c(40:250), "X2"] <- 0
+  # percentage <- percentage_of_zeros(file_data$data[, "X2"])
+
+  data <- delete_zero(file_data$data)
+
+  expect_equivalent(sum(!is.na(data[c(12:16), "X1"])), 0)
+  expect_equivalent(sum(!is.na(data[c(12:16), "X2"])), 5)
+})
+
+
+#######################################################################################v
 
 # #' testea la función main_mediterranean_calculations
 # #'

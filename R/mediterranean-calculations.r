@@ -43,9 +43,12 @@ mediterranean_calculations <- function(file_data = "data.csv", file_coor = "coor
 
 	####################
 
+	# Eliminamos datos si tenemos 5 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70% de ceros
+	delete_zero_data <- delete_zero(data = read_all_data$data)
+
 	# Control de calidad, se eliminan series completas y datos sueltos inválidos
-	control_data <- quality_control(data = read_all_data$data, coor = read_all_data$coor, max_dist = max_dist)
-	data_select = read_all_data$data[rownames(control_data$data), colnames(control_data$data)]
+	control_data <- quality_control(data = delete_zero_data, coor = read_all_data$coor, max_dist = max_dist)
+	data_select = delete_zero_data[rownames(control_data$data), colnames(control_data$data)]
 
 	#################### save.image("quality_control.RData")
 

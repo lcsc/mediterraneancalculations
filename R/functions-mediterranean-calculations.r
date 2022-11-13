@@ -28,7 +28,9 @@ NULL
 
 ### Variables globales
 crs84 <- sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") #https://spatialreference.org/ref/epsg/wgs-84/ "epsg:4326"
+# crs84 <- sp::CRS("+proj=longlat +datum=WGS84 +no_defs +type=crs") 
 crs84m <- sp::CRS("+proj=geocent +datum=WGS84 +units=m +no_defs") #https://epsg.io/4978 "EPSG:4978"
+# crs84m <- sp::CRS("+proj=geocent +datum=WGS84 +units=m +no_defs +type=crs") 
 
 min_years <- 10 # Años mínimos de datos para que no se elimine una estación
 min_overlap <- 10 # Años mínimos de datos de solape entre 2 series para rellenar una con la otra
@@ -385,31 +387,20 @@ fill_unfillable_station  <- function(data, fillable_years){
 fill_series <- function(control_data, min_correlation, max_dist){
 
   return_control_data <- control_data
-
-  ##  Para junio, julio y agosto, rellenamos con la más cercana
-  data_near <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
-
   all_series <- colnames(control_data$data)
-  summer = grepl("Jun", rownames(return_control_data$data)) | grepl("Jul", rownames(return_control_data$data)) | grepl("Aug", rownames(return_control_data$data))
-
-  i_serie <- all_series[1]
-  for(i_serie in all_series){
-    i_order <- data_near[[i_serie]] #Orden de distancia con las otras series
-    if(length(i_order) > 1){
-      data_10 <- control_data$data[, i_order] # Datos en orden de las otras series
-      data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = 1))
-      return_control_data$data[summer & is.na(return_control_data$data[, i_serie]), i_serie] <- data_refe_10[summer & is.na(return_control_data$data[, i_serie])]
-    }
-  }
 
   ## Rellenamos con estaciones a menos de 200km con correlación por encima de 0.7
   # Las series a utilizar se tienen que solapar 10 años
   overlap <- overlap_station(control_data)
 
+  ##  Para junio, julio y agosto, rellenamos con la más cercana
+  data_near <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
+  summer = grepl("Jun", rownames(return_control_data$data)) | grepl("Jul", rownames(return_control_data$data)) | grepl("Aug", rownames(return_control_data$data))
+
   # Rellenamos los meses que no son de verano
   data_cor_list <- near_correlations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
   months <- names(data_cor_list)
-  months <- months[! months %in% c("Jun", "Jul", "Aug")]
+  # months <- months[! months %in% c("Jun", "Jul", "Aug")]
   i_month <- months[2]
   for(i_month in months){
     data_cor <- data_cor_list[[i_month]]
@@ -434,12 +425,22 @@ fill_series <- function(control_data, min_correlation, max_dist){
           other_series <- array(other_series, c(length(other_series), 1))
         }
 
-        data_refe <- fill_one_series(series = data_month[, i_series], other_series = other_series)
-
-        return_control_data$data[date_month & is.na(return_control_data$data[, i_series]), i_series] <- data_refe[is.na(return_control_data$data[date_month, i_series])]
+        # print(paste(i_series, i_month, dim(other_series)[2]))
+        if(dim(other_series)[2] == 0 & (i_month %in% c("Jun", "Jul", "Aug"))){
+          i_order <- data_near[[i_series]] #Orden de distancia con las otras series
+          if(length(i_order) > 1){
+            data_10 <- control_data$data[, i_order] # Datos en orden de las otras series
+            data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = 1))
+            return_control_data$data[summer & is.na(return_control_data$data[, i_series]), i_series] <- data_refe_10[summer & is.na(return_control_data$data[, i_series])]
+          }
+        }else{
+          data_refe <- fill_one_series(series = data_month[, i_series], other_series = other_series)
+          return_control_data$data[date_month & is.na(return_control_data$data[, i_series]), i_series] <- data_refe[is.na(return_control_data$data[date_month, i_series])]          
+        }
       }
     }
   }
+
   return(return_control_data)
 }
 
@@ -1138,4 +1139,64 @@ calc_percentage <- function(datos) {
     percentage <- 0
   }
   return(percentage)
+}
+
+#' Devuelve el procentage de datos válidos que son 0s
+#'
+#' @param datos datos
+#'
+#' @return percentage
+#' @export
+#'
+percentage_of_zeros <- function(data) {
+  return(100 * sum(data == 0, na.rm = TRUE) / sum(!is.na(data), na.rm = TRUE))
+}
+
+#' Elimina datos si tenemos 5 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70% de ceros
+#'
+#' @param data datos
+#'
+#' @return datos con los grupos de 0s eliminados
+#' @export
+#'
+delete_zero <- function(data) {
+
+  dates <- chron::chron(rownames(data), format = time_format, out.format = time_format)
+
+  # Porcentaje de 0s para cada mes y estación
+  months_percentage <- array(NA, dim = c(dim(data)[2], 12))
+  rownames(months_percentage) = colnames(data)
+
+  month <- 1
+  for(month in c(1:12)){
+    ok_month <- as.numeric(base::months(dates)) == month
+    data_month <- data[ok_month, ]
+    months_percentage[, month] <- apply(data_month, c(2), percentage_of_zeros)
+    # print(percentage_of_zeros(data_month[, "X220652"]))
+  }
+
+  data_zero <- data
+
+  stations <- colnames(data)
+  station <- stations[1]
+  for(station in stations){
+    station_rle <- rle(data[, station])
+    position <- cumsum(station_rle$lengths)
+
+    zero_groups <- which(!is.na(station_rle$values) & station_rle$values == 0 & station_rle$lengths >= 5)
+    
+    zero_group <- zero_groups[1]
+    for(zero_group in zero_groups){
+        range <- c((position[zero_group] - station_rle$lengths[zero_group] + 1) : position[zero_group])
+        # print(paste(data[range, station]))
+
+        # if(sum(months_percentage[station, as.numeric(base::months(dates[range]))] < 70) > 0){
+        #   data_zero[range, station] <- NA
+        # }
+        data_zero[range[months_percentage[station, as.numeric(base::months(dates[range]))] < 70], station] <- NA
+    }
+
+  }
+
+  return(data_zero)
 }
