@@ -25,7 +25,7 @@ context("MediterraneanCalculations")
 
 ##################################################
 
-max_dist <- 200 # Máxima distancia entre 2 estaciones para usar una para evaluar o completar la otra
+max_dist_test <- 200 # Máxima distancia entre 2 estaciones para usar una para evaluar o completar la otra
 
 #' genera un data asociado a un coor que sirve en varios tests
 #'
@@ -162,7 +162,7 @@ test_that("near_correlations", {
   control_data$data[11, 3] <- -1
   control_data$data[11, 4] <- 1
   control_data$data[11, 5] <- 0
-  data_result <- near_correlations(control_data$data, control_data$coor, max_dist = max_dist)
+  data_result <- near_correlations(control_data$data, control_data$coor, max_dist = max_dist_test)
   expect_equivalent(is.na(NA), is.na(data_result$Aug[3, 3]), info = deparse(sys.calls()[[sys.nframe()]]))
   expect_equivalent(-1, data_result$Aug[1, 3], info = deparse(sys.calls()[[sys.nframe()]]))
 })
@@ -175,7 +175,7 @@ test_that("near_correlations", {
 test_that("near_estations", {
   control_data <- generate_mock_data_coor()
   control_data$coor[5, ] <- c(50, 50)
-  data_result <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
+  data_result <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist_test)
   expect_equivalent(0, length(data_result$X5), info = deparse(sys.calls()[[sys.nframe()]]))
   expect_equivalent(3, length(data_result$X1), info = deparse(sys.calls()[[sys.nframe()]]))
 
@@ -184,7 +184,7 @@ test_that("near_estations", {
   control_data$coor[3, ] <- c(3, 1)
   control_data$coor[4, ] <- c(4, 1)
   control_data$coor[5, ] <- c(5, 1)
-  data_result <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
+  data_result <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist_test)
   expect_equivalent(4, length(data_result$X5), info = deparse(sys.calls()[[sys.nframe()]]))
   expect_equivalent(c(2, 3, 4, 5), data_result$X1, info = deparse(sys.calls()[[sys.nframe()]]))
 })
@@ -213,7 +213,7 @@ test_that("quality_control", {
 
   coor_result <- control_data$coor[colnames(data_result), ]
 
-  result <- quality_control(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
+  result <- quality_control(data = control_data$data, coor = control_data$coor, max_dist = max_dist_test)
 
   expect_equivalent(result$data, data_result, info = deparse(sys.calls()[[sys.nframe()]]))
   expect_equivalent(result$coor, coor_result, info = deparse(sys.calls()[[sys.nframe()]]))
@@ -221,7 +221,7 @@ test_that("quality_control", {
   # Estación solitaria
   control_data$data[12, "X5"] <- NA
   control_data$coor["X5", ] <- c(45, 90)
-  result <- quality_control(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
+  result <- quality_control(data = control_data$data, coor = control_data$coor, max_dist = max_dist_test)
 
   expect_equivalent(result$data[, "X5"], control_data$data[, "X5"], info = deparse(sys.calls()[[sys.nframe()]]))
 })
@@ -285,7 +285,7 @@ test_that("fill_series", {
   control_data$data[24, 4] <- 1
   control_data$data[24, 5] <- 0
 
-  data_result <- fill_series(control_data, min_correlation = min_correlation, max_dist = max_dist)
+  data_result <- fill_series(control_data, min_correlation = min_correlation, max_dist = max_dist_test)
   expect_lt(sum(is.na(data_result$data)), sum(is.na(control_data$data)), label = info)
   expect_equivalent(sum(is.na(data_result$data)), 0, info = info)
 })
@@ -593,7 +593,7 @@ test_that("delete_zero", {
 #   file_data <- "test_result/data_1930.csv"
 #   file_coor <- "test_result/coor_1930.csv"
 
-#   main_mediterranean_calculations(file_data = file_data, file_coor = file_coor, max_dist = max_dist)
+#   main_mediterranean_calculations(file_data = file_data, file_coor = file_coor, max_dist = max_dist_test)
 
 #   # sum(is.na(control_data$data[,"X5"]))
 
@@ -613,7 +613,7 @@ test_that("delete_zero", {
 #   file_data <- "test_result/data_1930.csv"
 #   file_coor <- "test_result/coor_1930.csv"
 
-#   main_mediterranean_calculations(file_data = file_data, file_coor = file_coor, max_dist = max_dist)
+#   main_mediterranean_calculations(file_data = file_data, file_coor = file_coor, max_dist = max_dist_test)
 
 #   # sum(is.na(control_data$data[,"X5"]))
 
