@@ -1,7 +1,7 @@
 Package: mediterraneancalculations
 Type: Package
 Version: 0.1-6
-Date: 2022-10-26
+Date: 2022-10-26 
 Title: Mediterranean Calculations
 Author: Sergio M. Vicente-Serrano [aut], Fergus Reig-Gracia [aut, cre]
 Maintainer: Fergus Reig-Gracia <fergusrg@gmail.com>
