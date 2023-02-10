@@ -4,10 +4,12 @@
 \alias{calc_percentage}
 \title{Diferencia en porcentaje}
 \usage{
-calc_percentage(datos)
+calc_percentage(datos, years = NA)
 }
 \arguments{
 \item{datos}{datos}
+
+\item{years}{años}
 }
 \value{
 percentage

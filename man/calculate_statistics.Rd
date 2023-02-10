@@ -2,20 +2,18 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{calculate_statistics}
 \alias{calculate_statistics}
-\title{Salida final: serie regional promedio, tendencias, SPI...
-Un RData o RDS y ficheros CSV sueltos por base da datos
-Identificador, X, Y, series...}
+\title{Salida final con todos los estadíticos, serie regional promedio, tendencias, SPI...}
 \usage{
-calculate_statistics(data)
+calculate_statistics(data, data_ori)
 }
 \arguments{
 \item{data}{data y coor}
+
+\item{data_ori}{data original}
 }
 \value{
 data and coor
 }
 \description{
-Salida final: serie regional promedio, tendencias, SPI...
-Un RData o RDS y ficheros CSV sueltos por base da datos
-Identificador, X, Y, series...
+Salida final con todos los estadíticos, serie regional promedio, tendencias, SPI...
 }

@@ -8,10 +8,12 @@ Estaciones con más del 90 o 95% de datos rellenos
 Ordenamos las estaciones por correlación (mínima 0.5) y rellenamos usando los 10 métodos...
 Las estaciones sin relleno total las tiramos}
 \usage{
-second_data_fill(data)
+second_data_fill(data, max_dist_eval = NA)
 }
 \arguments{
 \item{data}{data y coor}
+
+\item{max_dist_eval}{maxima distancia para el relleno}
 }
 \value{
 data y coor

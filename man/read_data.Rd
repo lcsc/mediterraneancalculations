@@ -2,7 +2,8 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{read_data}
 \alias{read_data}
-\title{Leemos los datos desde los CSVs con el formato acordado}
+\title{Leemos los datos desde los CSVs con el formato acordado
+Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)}
 \usage{
 read_data(file_data, file_coor)
 }
@@ -12,8 +13,9 @@ read_data(file_data, file_coor)
 \item{file_coor}{ruta del fichero de coordenadas}
 }
 \value{
-None
+datos originales, datos de interes y coordenadas de las estaciones leidas
 }
 \description{
 Leemos los datos desde los CSVs con el formato acordado
+Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)
 }

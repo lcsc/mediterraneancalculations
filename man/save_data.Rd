@@ -11,14 +11,12 @@
 - 1950 a 2020 con más de 40 años originales
 - 1990 a 2020 con más de 30 años originales}
 \usage{
-save_data(data_ori, control_data, folder_name = NA)
+save_data(data_ori, control_data)
 }
 \arguments{
 \item{data_ori}{datos originales leidos de los ficheros CSV}
 
 \item{control_data}{datos de las estaciones y sus coordenadas}
-
-\item{folder_name}{carpeta en la que se guardan los datos, si NA no se guardan}
 }
 \value{
 data y coor con los datos que no pasan el control eliminados

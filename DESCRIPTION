@@ -1,12 +1,12 @@
 Package: mediterraneancalculations
 Type: Package
-Version: 0.1-6
-Date: 2022-10-26 
+Version: 0.2-2
+Date: 2023-01-10
 Title: Mediterranean Calculations
 Author: Sergio M. Vicente-Serrano [aut], Fergus Reig-Gracia [aut, cre]
 Maintainer: Fergus Reig-Gracia <fergusrg@gmail.com>
 Depends: R (>= 2.10)
-Imports: chron, sp, rgdal, SpatialTools, lmom, SPEI, RobustLinearReg
+Imports: chron, sf, SpatialTools, lmom, SPEI, RobustLinearReg, hydroGOF, snowfall, Kendall, stats
 Description: .
 License: GPL (>= 3)
 URL: https://lcsc.csic.es
@@ -18,8 +18,8 @@ Suggests:
     knitr,
     testthat (>= 3.0.0)
 NeedsCompilation: no
-Packaged: 2022-10-26 09:38:24 UTC; freig
-RoxygenNote: 7.2.1
+Packaged: 2023-01-10 09:38:24 UTC; freig
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 Collate: 
     'functions-mediterranean-calculations.r'

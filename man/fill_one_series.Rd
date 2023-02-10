@@ -9,7 +9,7 @@ fill_one_series(series, other_series)
 \arguments{
 \item{series}{serie de datos a completar}
 
-\item{other_series}{series de datos con las que copletar en el orden en el que se tienen que utilizar}
+\item{other_series}{series de datos con las que completar en el orden en el que se tienen que utilizar}
 }
 \value{
 serie de datosd rellena

@@ -9,12 +9,16 @@ Existe también librería snht de R
 Para cada base de datos (1870, 1900...)
 Elegimos las 5 series más correlacionadas usandos las serie de diferencias
 Con las 5 hacemos una media ponderada, (correlación * dato1 + ...) / sum(correlaciones) y será la serie de referencia
-Alexanderson nos dará un punto de ruptura y un valor ratio por el que multiplicar la parte antigua... iterar mientras de puntos de ruptura}
+Alexanderson nos dará un punto de ruptura y un valor ratio por el que multiplicar la parte antigua... iterar mientras de puntos de ruptura
+Guardar estadísticos de inhomogeneidades. Básicamente número de datos cambiados en cada series y momento de la inhomogeneidad. 
+CSV con número de datos cambiados y CSV con punto de inhomogeneidad - todo x 12 meses}
 \usage{
-alexanderson_homogenize_data(file_data)
+alexanderson_homogenize_data(file_data, no_use_series = c())
 }
 \arguments{
 \item{file_data}{ruta del fichero de datos}
+
+\item{no_use_series}{series que no se homogeneizarán}
 }
 \value{
 None
@@ -28,4 +32,6 @@ Para cada base de datos (1870, 1900...)
 Elegimos las 5 series más correlacionadas usandos las serie de diferencias
 Con las 5 hacemos una media ponderada, (correlación * dato1 + ...) / sum(correlaciones) y será la serie de referencia
 Alexanderson nos dará un punto de ruptura y un valor ratio por el que multiplicar la parte antigua... iterar mientras de puntos de ruptura
+Guardar estadísticos de inhomogeneidades. Básicamente número de datos cambiados en cada series y momento de la inhomogeneidad. 
+CSV con número de datos cambiados y CSV con punto de inhomogeneidad - todo x 12 meses
 }

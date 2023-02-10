@@ -8,12 +8,14 @@ Estaciones con más del 90 o 95% de datos rellenos
 Ordenamos las estaciones por correlación (mínima 0.5) y rellenamos usando los 10 métodos...
 Las estaciones sin relleno total las tiramos}
 \usage{
-second_data_fill_data(file_data, fillable_years = 36)
+second_data_fill_data(file_data, fillable_years = 36, max_dist = NA)
 }
 \arguments{
 \item{file_data}{ruta del fichero de datos}
 
 \item{fillable_years}{años rellenables con la media mensual de la propia estación}
+
+\item{max_dist}{máxima distancia permitida para el relleno}
 }
 \value{
 None

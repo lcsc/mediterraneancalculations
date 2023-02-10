@@ -4,10 +4,12 @@
 \alias{alexanderson_homogenize}
 \title{Test de Alexanderson para todos los ficheros disponibles (que han pasado el segundo relleno con éxito)}
 \usage{
-alexanderson_homogenize(data)
+alexanderson_homogenize(data, folder)
 }
 \arguments{
 \item{data}{data y coor}
+
+\item{folder}{directorio para guardar los datos de salida}
 }
 \value{
 data y coor

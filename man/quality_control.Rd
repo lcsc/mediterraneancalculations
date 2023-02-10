@@ -7,7 +7,7 @@ Estaciones con menos de 20 años de datos retirar
 Usando las 10 más cercanas a menos de 200 km, desechar si promedio de percentil se diferencia en más de 0.6 
 o en más de 0.5 para datos 0}
 \usage{
-quality_control(data, coor, max_dist)
+quality_control(data, coor, max_dist, max_diff_anomaly, max_diff_anomaly_0)
 }
 \arguments{
 \item{data}{datos}
@@ -15,6 +15,10 @@ quality_control(data, coor, max_dist)
 \item{coor}{coordenadas}
 
 \item{max_dist}{máxima distancia entre 2 estaciones para usar una para evaluar o completar la otra}
+
+\item{max_diff_anomaly}{máxima diferencia de anomalías para mantener dato en el control}
+
+\item{max_diff_anomaly_0}{máxima diferencia de anomalías para mantener dato en el control, si el dato es 0}
 }
 \value{
 data y coor con los datos que no pasan el control eliminados

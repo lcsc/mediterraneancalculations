@@ -2,22 +2,20 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{main_mediterranean_calculations}
 \alias{main_mediterranean_calculations}
-\title{Lee los ficheros de precipitación, calcula estadísitocs y guarda los resultados
+\title{Lee los ficheros de precipitación, calcula estadísticos y guarda los resultados
 Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)}
 \usage{
-main_mediterranean_calculations(file_data, file_coor, max_dist)
+main_mediterranean_calculations(file_data, file_coor)
 }
 \arguments{
 \item{file_data}{ruta del fichero de datos}
 
 \item{file_coor}{ruta del fichero de coordenadas}
-
-\item{max_dist}{máxima distancia entre 2 estaciones para usar una para evaluar o completar la otra}
 }
 \value{
 None
 }
 \description{
-Lee los ficheros de precipitación, calcula estadísitocs y guarda los resultados
+Lee los ficheros de precipitación, calcula estadísticos y guarda los resultados
 Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)
 }
