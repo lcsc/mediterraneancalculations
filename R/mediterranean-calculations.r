@@ -55,16 +55,21 @@ second_data_fill_data <- function(file_data, fillable_years = 36, max_dist = NA)
 	no_nas <- (dim(file_data$data)[1] - apply(file_data$data, c(2), sum_no_nas)) < (dim(file_data$data)[1] * (100 - percentage_filled_data) / 100)
 	control_data <- list(data = file_data$data[, no_nas], coor = file_data$coor[no_nas, ])
 
-	if(sum(no_nas) > 0){
+	if(sum(no_nas) == 0){
+		all_data <- NA
+	}else if(sum(no_nas) == 1){
+		if(sum(is.na(file_data$data)) == 0){
+			all_data <- file_data
+		}else{
+			all_data <- NA
+		}
+	}else{
 		# segundo relleno
 		fill_data <- fill_series(control_data = control_data, min_correlation = min_second_correlation, max_dist = max_dist)
 
 		# Retiramo estaciones no completas
 		no_nas <- dim(fill_data$data)[1] - apply(fill_data$data, c(2), sum_no_nas) == 0
-		all_data <- list(data = fill_data$data[, no_nas], coor = fill_data$coor[no_nas, ])
-		if(length(all_data$data) > 0 & is.null(dim(all_data$data))){
-			all_data$data = array(all_data$data, dim = c(length(all_data$data), 1), dimnames = list(rownames(fill_data$data), colnames(fill_data$data)[no_nas]))
-		}
+		all_data <- list(data = fill_data$data[, no_nas, drop = FALSE], coor = fill_data$coor[no_nas, ])
 
 		# Si no tenemos datos, intentamos rellenar alguna serie consigo misma
 		if(dim(all_data$coor)[1] <= 6){
@@ -73,14 +78,8 @@ second_data_fill_data <- function(file_data, fillable_years = 36, max_dist = NA)
 
 			# Retiramo estaciones no completas
 			no_nas <- dim(fill_data$data)[1] - apply(fill_data$data, c(2), sum_no_nas) == 0
-			all_data <- list(data = fill_data$data[, no_nas], coor = fill_data$coor[no_nas, ])
-			if(length(all_data$data) > 0 & is.null(dim(all_data$data))){
-				all_data$data = array(all_data$data, dim = c(length(all_data$data), 1), dimnames = list(rownames(fill_data$data), colnames(fill_data$data)[no_nas]))
-			}
+			all_data <- list(data = fill_data$data[, no_nas, drop = FALSE], coor = fill_data$coor[no_nas, ])
 		}
-
-	}else{
-		all_data <- NA
 	}
 	return(all_data)
 }
@@ -225,27 +224,30 @@ alexanderson_homogenize <- function(data, folder){
 	i_ini <- names(data)[1]
 	for(i_ini in names(data)){
     	file_data <- data[[i_ini]]
-    	if(length(file_data) > 1 && dim(file_data$coor)[1] > 6){
-    		# Las estaciones que ya estaban en el grup precio han de ser exáctamente las mismas
-    		if(!is.null(file_data_pre)){
-    			delete_stations <- pre_stations[!pre_stations %in% colnames(file_data$data)]
-    			if(length(delete_stations) > 0){
-    				file_data$data <- cbind(file_data$data, file_data_pre$data[rownames(file_data$data), delete_stations])
-    				file_data$coor <- rbind(file_data$coor, file_data_pre$coor[delete_stations, ])
-    			}
-    			file_data$data[, pre_stations] <- file_data_pre$data[rownames(file_data$data), pre_stations]
-    		}
-    		homogenize_data <- alexanderson_homogenize_data(file_data = file_data, no_use_series = pre_stations)
-	    	
-    		# Generamos estadísticos pre homogenización
-    		mkTrend_pval <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_pval)
+    	if(length(file_data) > 1 && dim(file_data$coor)[1] > 0){
+    		if(dim(file_data$coor)[1] > 1){
+	    		# Las estaciones que ya estaban en el grup precio han de ser exáctamente las mismas
+	    		if(!is.null(file_data_pre)){
+	    			delete_stations <- pre_stations[!pre_stations %in% colnames(file_data$data)]
+	    			if(length(delete_stations) > 0){
+	    				file_data$data <- cbind(file_data$data, file_data_pre$data[rownames(file_data$data), delete_stations, drop = FALSE])
+	    				file_data$coor <- rbind(file_data$coor, file_data_pre$coor[delete_stations, ])
+	    			}
+	    			file_data$data[, pre_stations] <- file_data_pre$data[rownames(file_data$data), pre_stations]
+	    		}
+	    		homogenize_data <- alexanderson_homogenize_data(file_data = file_data, no_use_series = pre_stations)
+		    	
+	    		# Generamos estadísticos pre homogenización
+	    		mkTrend_pval <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_pval)
 
-  			mkTrend_slp <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_slp)
+	  			mkTrend_slp <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_slp)
 
-				percentage <- calc_data_year_month_station(data = file_data$data, calc_function = calc_percentage)
+					percentage <- calc_data_year_month_station(data = file_data$data, calc_function = calc_percentage)
 
-	    	data_save[[i_ini]] <- list(data = homogenize_data$data, coor = file_data$coor, change_values = homogenize_data$change_values, break_points = homogenize_data$break_points, mkTrend_pval_pre_homogenize = mkTrend_pval, mkTrend_slp_homogenize = mkTrend_slp, percentage_homogenize = percentage)
-
+		    	data_save[[i_ini]] <- list(data = homogenize_data$data, coor = file_data$coor, change_values = homogenize_data$change_values, break_points = homogenize_data$break_points, mkTrend_pval_pre_homogenize = mkTrend_pval, mkTrend_slp_homogenize = mkTrend_slp, percentage_homogenize = percentage)
+	    	}else{
+	    		data_save[[i_ini]] <- list(data = file_data$data, coor = file_data$coor, change_values = NA, break_points = NA, mkTrend_pval_pre_homogenize = NA, mkTrend_slp_homogenize = NA, percentage_homogenize = NA)
+	    	}
 	    	pre_stations <- rownames(data_save[[i_ini]]$coor)
 	    	file_data_pre <- data_save[[i_ini]]
 				save_csvs(i_ini, folder_name = folder, data_save = data_save[[i_ini]]$data, coor_save = data_save[[i_ini]]$coor)
@@ -316,7 +318,7 @@ calculate_statistics_data <- function(file_data, data_ori){
 	dry_spell_trend_data <- list()
 	dry_spell_trend_data[["scale_3"]] <- t(apply(spi_data[["scale_3"]], c(2), dry_spell_trend, threshold = 0))
 	colnames(dry_spell_trend_data[["scale_3"]]) <- c("p.dur", "p.mag", "trend.dur", "trend.mag")
-	dry_spell_trend_data[["scale_12"]] <- t(apply(spi_data[["scale_12"]][c(13:dim(spi_data[["scale_12"]])[1]), ], c(2), dry_spell_trend, threshold = 0))
+	dry_spell_trend_data[["scale_12"]] <- t(apply(spi_data[["scale_12"]][c(13:dim(spi_data[["scale_12"]])[1]), , drop = FALSE], c(2), dry_spell_trend, threshold = 0))
 	colnames(dry_spell_trend_data[["scale_12"]]) <- c("p.dur", "p.mag", "trend.dur", "trend.mag")
 
 	if(calc_mobile_trends_data){ #Solo lo calculamos para algunas fechas
@@ -325,8 +327,8 @@ calculate_statistics_data <- function(file_data, data_ori){
 		mobile_trends_data <- NA
 	}
 
-	# Indicamos con un 1 que el dato original era un NA y con un 0 que no era un NA
-  data_change <- data_ori[rownames(file_data$data), colnames(file_data$data)]
+	# Indicamos con un 1 que el dato original no era un NA y con un 0 que era un NA
+  data_change <- data_ori[rownames(file_data$data), colnames(file_data$data), drop = FALSE]
   data_change[!is.na(data_change)] <- 1
   data_change[is.na(data_change)] <- 0
 
@@ -370,8 +372,8 @@ delete_zones <- function(data){
 
 	i_ini <- names(data)[length(data)]
 	for(i_ini in names(data)){
-		data[[i_ini]]$coor <- data[[i_ini]]$coor[data[[i_ini]]$coor[, "lat"] >= min_north, ]
-		data[[i_ini]]$data <- data[[i_ini]]$data[, rownames(data[[i_ini]]$coor)]
+		data[[i_ini]]$coor <- data[[i_ini]]$coor[data[[i_ini]]$coor[, "lat"] >= min_north, , drop = FALSE]
+		data[[i_ini]]$data <- data[[i_ini]]$data[, rownames(data[[i_ini]]$coor), drop = FALSE]
 	}
 	return(data)
 }
@@ -386,33 +388,73 @@ delete_zones <- function(data){
 #' @export
 #'
 main_mediterranean_calculations <- function(file_data, file_coor){
-	max_dist_eval <- 100
-	max_dist_fill <- 200
-	max_dist_second_eval <- 200
+	pb <- utils::txtProgressBar(min = 0,  # Valor mínimo de la barra de progreso
+                     max = 100,  # Valor máximo de la barra de progreso
+                     style = 3,  # Estilo de la barra (también style = 1 y style = 2)
+                     width = 50, # Ancho de la barra. Por defecto: getOption("width")
+                     char = "=")
+
+	folder <- alexanderson_folder
 
 	# Leemos los datos
 	read_all_data <- read_data(file_data, file_coor)
 
+	utils::setTxtProgressBar(pb, 5)
+
+	data_statistics <- main_mediterranean_calculations_(read_all_data, folder)
+
+	utils::setTxtProgressBar(pb, 95)
+
+	saveRDS(data_statistics, file = "mediterranean_calculations.rds")	
+	# data_save <- readRDS("mediterranean_calculations.rds")
+
+	utils::setTxtProgressBar(pb, 100)
+
+	# save_csvs(i_ini = "prueba", folder_name = "prueba", data_save = data_first_fill$start_1981$data, coor_save = data_first_fill$start_1981$coor)
+	# save.image("main_mediterranean_calculations.RData")
+	# load("main_mediterranean_calculations.RData")
+	return(data_statistics)
+}
+
+#' Calcula los estadísticos para un país
+#'
+#' @param read_all_data datos de entrada
+#' @param folder carpeta donde guarda ficheros
+#' @param pb barra de progreso
+#'
+#' @return None
+#' @export
+#'
+main_mediterranean_calculations_ <- function(read_all_data, folder, pb = NULL){
+	max_dist_eval <- 100
+	max_dist_fill <- 200
+	max_dist_second_eval <- 200
+
 	# A) Control de calidad
 	control_data <- mediterranean_calculations(data = read_all_data, max_dist_eval = max_dist_eval)
-	statistics_data_removed <- save_delete_data(ori_data = read_all_data$data, process_data = control_data$data, folder = alexanderson_folder)
+	statistics_data_removed <- save_delete_data(ori_data = read_all_data$data, process_data = control_data$data, folder = folder)
+
+	if(!is.null(pb)) { utils::setTxtProgressBar(pb, 15) }
 
 	# B) Reconstrucción - Primer relleno y segundo relleno solo entre los datos ya seleccionados en cada base de datos
 	fill_data <- fill_series(control_data = control_data, min_correlation = min_correlation, max_dist = max_dist_fill)
 	data_first_fill <- save_data(data_ori = read_all_data$data_ori, control_data = fill_data)
 	data_second_fill <- second_data_fill(data = data_first_fill, max_dist_eval = max_dist_second_eval)
 
-	# Calcular estadísticos de la reconstrucción
-	# reconstruction_statistics <- calculate_reconstruction_statistics(sim = data_second_fill, obs = read_all_data$data_ori)
+	# Eliminar series por debajo de 28 grados Norte
+	data_second_fill_zone <- delete_zones(data = data_second_fill)
 
-	# Eliminar series por encima debajo de 28 grados Norte
-	data_zone_second_fill <- delete_zones(data = data_second_fill)
+	if(!is.null(pb)) { utils::setTxtProgressBar(pb, 35) }
 
 	# C) Homogeneización - test de Alexanderson
-	data_homogenize <- alexanderson_homogenize(data = data_zone_second_fill, folder = alexanderson_folder)
+	data_homogenize <- alexanderson_homogenize(data = data_second_fill_zone, folder = folder)
+
+	if(!is.null(pb)) { utils::setTxtProgressBar(pb, 55) }
 
 	# D) Análisis - Salida final: serie regional promedio, tendencias y SPI
 	data_statistics <- calculate_statistics(data = data_homogenize, data_ori = read_all_data$data_ori)
+
+	if(!is.null(pb)) { utils::setTxtProgressBar(pb, 93) }
 
 	data_statistics$statistics_data_removed <- statistics_data_removed
 	data_statistics$availability_data_original <- list()
@@ -423,11 +465,5 @@ main_mediterranean_calculations <- function(file_data, file_coor){
 	rows_availability_data_original <- chron::chron(rownames(data_statistics$availability_data_original$data), format=c(dates = "d/m/yy", times = "h:m:s"), out.format=c(dates = "d/m/yy", times = "h:m:s")) <= chron::chron(paste0("31/12/", i_end), format=c(dates = "d/m/y", times = "h:m:s"), out.format=c(dates = "d/m/yy", times = "h:m:s"))
 	data_statistics$availability_data_original$data <- data_statistics$availability_data_original$data[rows_availability_data_original, ]
 
-	saveRDS(data_statistics, file = "mediterranean_calculations.rds")	
-	# data_save <- readRDS("mediterranean_calculations.rds")
-
-	# save_csvs(i_ini = "prueba", folder_name = "prueba", data_save = data_first_fill$start_1981$data, coor_save = data_first_fill$start_1981$coor)
-	# save.image("main_mediterranean_calculations.RData")
-	# load("main_mediterranean_calculations.RData")
 	return(data_statistics)
 }

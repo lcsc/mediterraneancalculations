@@ -26,6 +26,7 @@ NULL
 #' @importFrom SPEI spi
 #' @importFrom hydroGOF d mae pbias rmse
 #' @importFrom snowfall sfInit sfExport sfLapply sfStop sfExportAll sfLibrary
+#' @importFrom utils setTxtProgressBar txtProgressBar
 NULL
 
 ### Variables globales
@@ -227,14 +228,15 @@ select_data <- function(data, n_reference_stations){
 #' @export
 #'
 apply_ecdf_month <- function(data){
-  l_mom <- lmom::samlmu(data, nmom = 4, sort.data = TRUE, ratios = TRUE, trim = 0)
+
+  l_mom <- suppressWarnings(lmom::samlmu(data, nmom = 4, sort.data = TRUE, ratios = TRUE, trim = 0))
 
   # Seleccionamos la mejor de las 10 funciones
   p.value = array(NA, dim = length(pel_functions), dimnames = list(names(pel_functions)))
   best_funcion = names(pel_functions)[3]
   for(best_funcion in names(pel_functions)){
     shapiro_value <- tryCatch({
-      par_exp <- pel_functions[[best_funcion]](l_mom)
+      par_exp <- suppressWarnings(pel_functions[[best_funcion]](l_mom))
       cdf_exp <- cdf_functions[[best_funcion]](data, para = par_exp)
       norm_exp <- stats::qnorm(cdf_exp)
       shapiro_value <- stats::shapiro.test(norm_exp)$p.value
@@ -284,7 +286,7 @@ apply_ecdf <- function(data){
 #' @export
 #'
 near_correlations <- function(data, coor, max_dist){
-  points_data <- sf::st_sfc(sf::st_multipoint(as.matrix(coor[, c("lon", "lat")])), crs = crs84)
+  points_data <- sf::st_sfc(sf::st_multipoint(as.matrix(coor[, c("lon", "lat"), drop = FALSE])), crs = crs84)
   # plot(world)
   # plot(points_data, add = TRUE, col = "red")
   points_data <- sf::st_transform(points_data, crs = crs84m)
@@ -303,9 +305,9 @@ near_correlations <- function(data, coor, max_dist){
   data_cor_list <- list()
   # Calcular correlaciones (por meses)
   while(length(data_cor_list) <= 11){
-    data_month <- data[(c(1:dim(data)[1])-1)%%12==length(data_cor_list), ]
+    data_month <- data[(c(1:dim(data)[1])-1)%%12 == length(data_cor_list), , drop = FALSE]
     name_month <- substr(rownames(data_month)[1], 4, 6)
-    data_cor <- stats::cor(data_month, use = 'pairwise.complete.obs')
+    data_cor <- suppressWarnings(stats::cor(data_month, use = 'pairwise.complete.obs'))
     data_cor[is.na(dist)] <- NA
     data_cor_list[[name_month]] <- data_cor
   }
@@ -324,12 +326,12 @@ near_correlations <- function(data, coor, max_dist){
 #'
 near_estations <- function(data, coor, max_dist){
   # Pasar coordenadas de grados a metros
-  points_data <- sf::st_sfc(sf::st_multipoint(as.matrix(coor[, c("lon", "lat")])), crs = crs84)
+  points_data <- sf::st_sfc(sf::st_multipoint(as.matrix(coor[, c("lon", "lat"), drop = FALSE])), crs = crs84)
   # plot(world)
   # plot(points_data, add = TRUE, col = "red")
   points_data <- sf::st_transform(points_data, crs = crs84m)
   coordinates <- as.matrix(coor)
-  coordinates[, ] <- sf::st_coordinates(points_data)[, c("X", "Y")]
+  coordinates[, ] <- sf::st_coordinates(points_data)[, c("X", "Y"), drop = FALSE]
 
   # Eliminar estaciones a más de 200 km para los cálculos del control de calidad
   dist <- SpatialTools::dist1(coordinates)
@@ -367,22 +369,22 @@ quality_control <- function(data, coor, max_dist, max_diff_anomaly, max_diff_ano
   # Eliminar estaciones con menos de min_years años de datos
   min_n_data <- min_years * 12
   no_nas <- apply(data, c(2), sum_no_nas) > min_n_data
-  data <- data[, no_nas]
-  coor <- coor[colnames(data), ]
+  data <- data[, no_nas, drop = FALSE]
+  coor <- coor[colnames(data), , drop = FALSE]
 
   # Eliminar estaciones con menos de 1 año de datos para algún mes
   no_nas <- NA
   i <- 1
   for(i in c(0:11)){
-    month_no_nas <- apply(data[c(1:dim(data)[1])%%12 == i, ], c(2), sum_no_nas) > 1
+    month_no_nas <- apply(data[c(1:dim(data)[1])%%12 == i, , drop = FALSE], c(2), sum_no_nas) > 1
     if(length(no_nas) > 1){
       no_nas <- no_nas & month_no_nas
     }else{
       no_nas <- month_no_nas
     }
   }
-  data <- data[, no_nas]
-  coor <- coor[colnames(data), ]
+  data <- data[, no_nas, drop = FALSE]
+  coor <- coor[colnames(data), , drop = FALSE]
 
   all_series <- colnames(data)
   data_correct <- as.matrix(data) 
@@ -393,28 +395,30 @@ quality_control <- function(data, coor, max_dist, max_diff_anomaly, max_diff_ano
   ### Correlación por meses
   data_near <- near_estations(data, coor, max_dist = max_dist)
 
-  months <- unique(substr(rownames(data), 4, 6))
-  # Para cada mes
-  i_month <- months[12]
-  for(i_month in months){
-    # Seleccionamos los datos de mes
-    data_percent_month <- data_percent[grepl(i_month, rownames(data_percent)), ]
+  if(length(data_near) > 0){
+    months <- unique(substr(rownames(data), 4, 6))
+    # Para cada mes
+    i_month <- months[12]
+    for(i_month in months){
+      # Seleccionamos los datos de mes
+      data_percent_month <- data_percent[grepl(i_month, rownames(data_percent)), ]
 
-    #Ordenar según distancias
-    data_order <- data_near
-    if(length(data_order) > 0){
-      # 10 series más cercanas
-      i_serie <- all_series[1]
-      for(i_serie in all_series){
-        i_order <- data_order[[i_serie]][1:max_usable_neighbours] #Orden de cercanía con las otras series
-        i_order <- i_order[!is.na(i_order)]
-        if(length(i_order) >= min_usable_neighbours){
-          data_ori <- data[rownames(data_percent_month), i_serie]
-          data_10 <- data_percent_month[, i_order] # Datos en orden de las otras series
-          data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = n_reference_stations))
-          data_refe <- apply(data_refe_10, c(1), base::mean, na.rm = TRUE)
-          data_correct[rownames(data_percent_month)[!is.na(data_ori) & data_ori!=0 & !is.na(data_percent_month[, i_serie]) & !is.na(data_refe) & abs(data_percent_month[, i_serie] - data_refe) > max_diff_anomaly], i_serie] <- NA
-          data_correct[rownames(data_percent_month)[!is.na(data_ori) & data_ori==0 & !is.na(data_percent_month[, i_serie]) & !is.na(data_refe) & abs(data_percent_month[, i_serie] - data_refe) > max_diff_anomaly_0], i_serie] <- NA
+      #Ordenar según distancias
+      data_order <- data_near
+      if(length(data_order) > 0){
+        # 10 series más cercanas
+        i_serie <- all_series[1]
+        for(i_serie in all_series){
+          i_order <- data_order[[i_serie]][1:max_usable_neighbours] #Orden de cercanía con las otras series
+          i_order <- i_order[!is.na(i_order)]
+          if(length(i_order) >= min_usable_neighbours){
+            data_ori <- data[rownames(data_percent_month), i_serie]
+            data_10 <- data_percent_month[, i_order] # Datos en orden de las otras series
+            data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = n_reference_stations))
+            data_refe <- apply(data_refe_10, c(1), base::mean, na.rm = TRUE)
+            data_correct[rownames(data_percent_month)[!is.na(data_ori) & data_ori != 0 & !is.na(data_percent_month[, i_serie]) & !is.na(data_refe) & (abs(data_percent_month[, i_serie] - data_refe) > max_diff_anomaly)], i_serie] <- NA
+            data_correct[rownames(data_percent_month)[!is.na(data_ori) & data_ori == 0 & !is.na(data_percent_month[, i_serie]) & !is.na(data_refe) & (abs(data_percent_month[, i_serie] - data_refe) > max_diff_anomaly_0)], i_serie] <- NA
+          }
         }
       }
     }
@@ -523,81 +527,80 @@ fill_series <- function(control_data, min_correlation, max_dist){
   array_colnames <- c("d", "mae", "pbias", "rmse")
 
   return_control_data <- control_data
-  all_series <- colnames(control_data$data)
 
-  ## Rellenamos con estaciones a menos de 200km con correlación por encima de 0.7
-  # Las series a utilizar se tienen que solapar 10 años
-  overlap <- overlap_station(control_data)
-  overlap_no_0 <- overlap_station_no_0(control_data)
+  if(dim(control_data$data)[2] > 1){
+    all_series <- colnames(control_data$data)
 
-  ##  Para algunos casos rellenamos con la más cercana
-  data_near <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
+    ## Rellenamos con estaciones a menos de 200km con correlación por encima de 0.7
+    # Las series a utilizar se tienen que solapar 10 años
+    overlap <- overlap_station(control_data)
+    overlap_no_0 <- overlap_station_no_0(control_data)
 
-  # Rellenamos los meses que no son de verano
-  data_cor_list <- near_correlations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
-  months <- names(data_cor_list)
-  i_month <- months[1]
-  for(i_month in months){
-    data_cor <- data_cor_list[[i_month]]
-    date_month <- grepl(i_month, rownames(control_data$data))
-    data_month <- control_data$data[date_month, ]
+    ##  Para algunos casos rellenamos con la más cercana
+    data_near <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
 
-    test_serie <- array(NA, dim(data_month)[1])
-    names(test_serie) <- rownames(data_month)
+    # Rellenamos los meses que no son de verano
+    data_cor_list <- near_correlations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
+    months <- names(data_cor_list)
+    i_month <- months[1]
+    for(i_month in months){
+      data_cor <- data_cor_list[[i_month]]
+      date_month <- grepl(i_month, rownames(control_data$data))
+      data_month <- control_data$data[date_month, ]
 
-    overlap_month <- overlap_station(control_data = list(data = data_month, coor = control_data$coor))
-    overlap_no_0_month <- overlap_station_no_0(control_data = list(data = data_month, coor = control_data$coor))
+      test_serie <- array(NA, dim(data_month)[1])
+      names(test_serie) <- rownames(data_month)
 
-    # No rellenamos con datos que no cumplan la correlación mínima
-    data_cor[data_cor < min_correlation] <- NA
+      overlap_month <- overlap_station(control_data = list(data = data_month, coor = control_data$coor))
+      overlap_no_0_month <- overlap_station_no_0(control_data = list(data = data_month, coor = control_data$coor))
 
-    # No rellenamos con datos de estaciones sin un solapamiento mínimo para todo el periodo
-    data_cor[overlap < min_overlap * 12] <- NA
-    data_cor[overlap_no_0 < min_overlap * 12] <- NA
+      # No rellenamos con datos que no cumplan la correlación mínima
+      data_cor[data_cor < min_correlation] <- NA
 
-    # No rellenamos con datos de estaciones sin un solapamiento mínimo para el mes actual
-    data_cor[overlap_month < min_overlap] <- NA
-    data_cor[overlap_no_0_month < min_overlap] <- NA
+      # No rellenamos con datos de estaciones sin un solapamiento mínimo para todo el periodo
+      data_cor[overlap < min_overlap * 12] <- NA
+      data_cor[overlap_no_0 < min_overlap * 12] <- NA
 
-    #Ordenar según correlaciones
-    if(length(data_near) > 0){
-      i_series <- all_series[1]
-      for(i_series in all_series){
-        i_order <- all_series[data_near[[i_series]]] #Estaciones ordenadas según su cercanía a la estación
-        data_cor_series <- colnames(data_cor)[!is.na(data_cor[, i_series])]
-        select_series <- i_order[i_order %in% data_cor_series] #Eliminamos estaciones que no cumplen alguna restricción
-        other_series <- data_month[, select_series]
-        if(is.null(dim(other_series))){
-          other_series <- array(other_series, c(length(other_series), 1))
-        }
+      # No rellenamos con datos de estaciones sin un solapamiento mínimo para el mes actual
+      data_cor[overlap_month < min_overlap] <- NA
+      data_cor[overlap_no_0_month < min_overlap] <- NA
 
-        if(dim(other_series)[2] != 0){
-          data_refe <- fill_one_series(series = data_month[, i_series], other_series = other_series)
-          data_refe_test <- fill_one_series(series = test_serie, other_series = other_series)
-          return_control_data$data[date_month & is.na(return_control_data$data[, i_series]), i_series] <- data_refe[is.na(return_control_data$data[date_month, i_series])]           
-        }
+      #Ordenar según correlaciones
+      if(length(data_near) > 0){
+        i_series <- all_series[1]
+        for(i_series in all_series){
+          i_order <- all_series[data_near[[i_series]]] #Estaciones ordenadas según su cercanía a la estación
+          data_cor_series <- colnames(data_cor)[!is.na(data_cor[, i_series])]
+          select_series <- i_order[i_order %in% data_cor_series] #Eliminamos estaciones que no cumplen alguna restricción
+          other_series <- data_month[, select_series, drop = FALSE]
 
-        zeros_left <- sum(is.na(data_month[, i_series])) > 0 && sum(data_month[, i_series] == 0, na.rm = TRUE)/sum(!is.na(data_month[, i_series]), na.rm = TRUE) > 0.5
-        if(dim(other_series)[2] == 0 || zeros_left){
-          i_order <- all_series[data_near[[i_series]]] #Orden de distancia con las otras series
-          
-          if(length(i_order) > 1){
-            data_10 <- control_data$data[, i_order] # Datos en orden de las otras series
-            data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = 1))
-
-            # Cuando se sustituye por la más cercana, considerar la ratio entre la estación candidata y la que utilizamos para sustituir
-            mean_10 <- mean(return_control_data$data[, i_series][!is.na(return_control_data$data[, i_series]) & !is.na(data_refe_10)])
-            mean_refe_10 <- mean(data_refe_10[!is.na(return_control_data$data[, i_series]) & !is.na(data_refe_10)])
-
-            data_refe_ok <- (mean_10 / mean_refe_10) * data_refe_10
-            return_control_data$data[is.na(return_control_data$data[, i_series]), i_series] <- data_refe_ok[is.na(return_control_data$data[, i_series])]
+          if(dim(other_series)[2] != 0){
+            data_refe <- fill_one_series(series = data_month[, i_series], other_series = other_series)
+            data_refe_test <- fill_one_series(series = test_serie, other_series = other_series)
+            return_control_data$data[date_month & is.na(return_control_data$data[, i_series]), i_series] <- data_refe[is.na(return_control_data$data[date_month, i_series])]           
           }
-        }
 
+          zeros_left <- sum(is.na(data_month[, i_series])) > 0 && sum(data_month[, i_series] == 0, na.rm = TRUE)/sum(!is.na(data_month[, i_series]), na.rm = TRUE) > 0.5
+          if(dim(other_series)[2] == 0 || zeros_left){
+            i_order <- all_series[data_near[[i_series]]] #Orden de distancia con las otras series
+            
+            if(length(i_order) > 1){
+              data_10 <- control_data$data[, i_order] # Datos en orden de las otras series
+              data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = 1))
+
+              # Cuando se sustituye por la más cercana, considerar la ratio entre la estación candidata y la que utilizamos para sustituir
+              mean_10 <- mean(return_control_data$data[, i_series][!is.na(return_control_data$data[, i_series]) & !is.na(data_refe_10)])
+              mean_refe_10 <- mean(data_refe_10[!is.na(return_control_data$data[, i_series]) & !is.na(data_refe_10)])
+
+              data_refe_ok <- (mean_10 / mean_refe_10) * data_refe_10
+              return_control_data$data[is.na(return_control_data$data[, i_series]), i_series] <- data_refe_ok[is.na(return_control_data$data[, i_series])]
+            }
+          }
+
+        }
       }
     }
   }
-
   return(return_control_data)
 }
 
@@ -630,7 +633,7 @@ fill_one_series <- function(series, other_series){
     series_comoon = series_no_0[!is.na(series_no_0) & !is.na(use_series_no_0)]
 
     # Calculamos sobre los datos en común de la serie a usar para rellenar
-    l_mom <- lmom::samlmu(use_series_comoon, nmom = 4, sort.data = TRUE, ratios = TRUE, trim = 0)
+    l_mom <- suppressWarnings(lmom::samlmu(use_series_comoon, nmom = 4, sort.data = TRUE, ratios = TRUE, trim = 0))
 
     # Seleccionamos la mejor de las 10 funciones
     p.value = array(NA, dim = length(pel_functions), dimnames = list(names(pel_functions)))
@@ -688,8 +691,7 @@ save_data <- function(data_ori, control_data){
 
   i_ini <- i_inis[length(i_inis)]
   for(i_ini in i_inis){
-
-    data_ori_select <- data_ori[, colnames(control_data$data)]
+    data_ori_select <- data_ori[, colnames(control_data$data), drop = FALSE]
 
     i_year <- i_years[as.character(i_ini)]
     date <- seq(chron::chron(paste0("01/01/", i_ini), format=c(dates = "d/m/y", times = "h:m:s"), out.format=c(dates = "d/m/yy", times = "h:m:s")), chron::chron(paste0("31/12/", i_end), format=c(dates = "d/m/y", times = "h:m:s"), out.format=c(dates = "d/m/yy", times = "h:m:s")), by = "month")
@@ -699,14 +701,12 @@ save_data <- function(data_ori, control_data){
     rownames(data) <- as.character(date)
     date_ok <- c(rownames(data), rownames(data_ori_select))[duplicated(c(rownames(data), rownames(data_ori_select)))]
     data[date_ok, ] <- as.matrix(data_ori_select)[date_ok, ]
-    data <- data[, apply(data, c(2), sum_no_nas) > i_year * 12]
-    coor_save <- control_data$coor[colnames(data), ]
-    data_save <- data
-    data_save[date_ok, colnames(data)] <- control_data$data[date_ok, colnames(data)]
-
-    if(dim(coor_save)[1] > 0){
+    data_save <- data[, apply(data, c(2), sum_no_nas) > i_year * 12, drop = FALSE]
+    coor_save <- control_data$coor[colnames(data_save), , drop = FALSE]
+    data_save[date_ok, colnames(data_save)] <- control_data$data[date_ok, colnames(data_save), drop = FALSE]
+    if(dim(coor_save)[1] > 0){      
       data_return[[paste0("start_", i_ini)]] <- list(data_save = data_save, coor_save = coor_save)
-    }
+    }    
   }
   return(data_return)
 }
@@ -768,16 +768,12 @@ read_data <- function(file_data, file_coor){
 
     # Revisión de fechas
     dates <- seq(chron::chron(rownames(data_ori)[1], format = time_format, out.format = time_format), chron::chron(rownames(data_ori)[dim(data_ori)[1]], format = time_format, out.format = time_format), by = "month")
-    data <- data_ori[as.character(dates), ]
-
-    if(is.null(dim(data))){
-      data <- array(data, c(length(data), 1), list(as.character(dates), c(colnames(data_ori))))
-    }
+    data <- data_ori[as.character(dates), , drop = FALSE]
 
     # Revisión de que tenemos las coordenadas
     no_coor <- which(!colnames(data) %in% rownames(coor))
     if(length(no_coor) > 0){
-      warning(paste("Eliminamos las estaciones", paste(colnames(data)[no_coor], sep = " ", collapse = " "), "por no tener disponibles las coordenadas.", sep = " ", collapse = " "))
+      warning(paste("We eliminate the stations", paste(colnames(data)[no_coor], sep = " ", collapse = " "), "because the coordinates are not available.", sep = " ", collapse = " "))
       data <- data[, colnames(data) %in% rownames(coor)]
     }
 
@@ -875,21 +871,21 @@ calc_data_year_month_station <- function(data, calc_function) {
   # Tendencia mensual, estacional y anual,función calc_function
   sens_slope <- list()
   sens_slope[["year"]] <- apply(calc_data_year(data), c(2), calc_function)
-  sens_slope[["summer"]] <- apply(calc_data_year(data[months %in% c("Jun", "Jul", "Aug"), ]), c(2), calc_function)
-  sens_slope[["autumn"]] <- apply(calc_data_year(data[months %in% c("Sep", "Oct", "Nov"), ]), c(2), calc_function)
+  sens_slope[["summer"]] <- apply(calc_data_year(data[months %in% c("Jun", "Jul", "Aug"), , drop = FALSE]), c(2), calc_function)
+  sens_slope[["autumn"]] <- apply(calc_data_year(data[months %in% c("Sep", "Oct", "Nov"), , drop = FALSE]), c(2), calc_function)
 
-  data_winter <- data[months %in% c("Dec", "Jan", "Feb"), ]
+  data_winter <- data[months %in% c("Dec", "Jan", "Feb"), , drop = FALSE]
   if(!grepl("Dec", rownames(data_winter)[1])){
-    data_winter <- data_winter[3:dim(data_winter)[1], ]
+    data_winter <- data_winter[3:dim(data_winter)[1], , drop = FALSE]
   }
   i_dec <- which(grepl("Dec", rownames(data_winter)))
   rownames(data_winter)[i_dec[1:(length(i_dec) - 1)]] <- rownames(data_winter)[i_dec[2:length(i_dec)]]
   if(grepl("Dec", rownames(data_winter)[dim(data_winter)[1]])){
-    data_winter <- data_winter[1:(dim(data_winter)[1] - 1), ]
+    data_winter <- data_winter[1:(dim(data_winter)[1] - 1), , drop = FALSE]
   }
 
   sens_slope[["winter"]]  <- apply(calc_data_year(data_winter), c(2), calc_function)
-  sens_slope[["spring"]] <- apply(calc_data_year(data[months %in% c("Mar", "Apr", "May"), ]), c(2), calc_function)
+  sens_slope[["spring"]] <- apply(calc_data_year(data[months %in% c("Mar", "Apr", "May"), , drop = FALSE]), c(2), calc_function)
   return(sens_slope)
 }
 
@@ -955,11 +951,11 @@ mkTrend <- function(x, ci = .95) {
    z0 <- 0
   }
   if (S > 0) {
-   z <- (S - 1) / sqrt(VS)
-   z0 <- (S - 1)/sqrt(var.S)
+   z <- suppressWarnings((S - 1) / sqrt(VS))
+   z0 <- suppressWarnings((S - 1)/sqrt(var.S))
   } else {
-   z <- (S + 1) / sqrt(VS)
-   z0 <- (S + 1) / sqrt(var.S)
+   z <- suppressWarnings((S + 1) / sqrt(VS))
+   z0 <- suppressWarnings((S + 1) / sqrt(var.S))
   }
 
   if(is.finite(z)){
@@ -1192,14 +1188,14 @@ delete_zero <- function(data) {
   month <- 1
   for(month in c(1:12)){
     ok_month <- as.numeric(base::months(dates)) == month
-    data_month <- data[ok_month, ]
+    data_month <- data[ok_month, , drop = FALSE]
     months_percentage[, month] <- apply(data_month, c(2), percentage_of_zeros)
   }
 
   data_zero <- data
 
   stations <- colnames(data)
-  station <- stations[2]
+  station <- stations[3]
   for(station in stations){
     station_rle <- rle(data[, station])
     position <- cumsum(station_rle$lengths)
@@ -1228,7 +1224,7 @@ delete_zero <- function(data) {
 #'
 save_delete_data <- function(ori_data, process_data, folder) {
 
-  ori_data <- ori_data[rownames(process_data), colnames(process_data)]
+  ori_data <- ori_data[rownames(process_data), colnames(process_data), drop = FALSE]
 
   ori_data[!is.na(ori_data)] <- 1
   ori_data[is.na(ori_data)] <- 0

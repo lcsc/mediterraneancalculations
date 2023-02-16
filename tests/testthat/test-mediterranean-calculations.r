@@ -44,19 +44,27 @@ generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
   data[18, 1] <- NA
   data[19, 1] <- 3 # Dato a eliminar por el control
   data[20, 1] <- 2 
-  # data[, 2] <- NA
-  data[1:(8*12), 2] <- rep(2, 8*12) # Serie a eliminar por pocos datos
-  data[, 3] <- rep(2, dim(data)[1])
+  
 
   coor <- array(NA, dim = c(dim(data)[2], 2))
   rownames(coor) <- colnames(data)
   colnames(coor) <- c("lat", "lon")
 
-  coor[1, ] <- c(1, 1)
-  coor[2, ] <- c(1, 1.1)
-  coor[3, ] <- c(1.1, 1)
+  coor[, ] <- c(40, 32)
 
-  if(ndata > 3){    
+  coor[1, ] <- c(1, 1)
+  if(ndata > 1){
+    # data[, 2] <- NA
+    data[1:(8*12), 2] <- rep(2, 8*12) # Serie a eliminar por pocos datos
+    coor[2, ] <- c(1, 1.1)
+  }
+
+  if(ndata > 2){
+    data[, 3] <- rep(2, dim(data)[1])
+    coor[3, ] <- c(1.1, 1)
+  }
+
+  if(ndata > 3){
     data[20, 3] <- 130 # Dato a eliminar por el control
     data[20, 4] <- 130
     data[20, 5] <- 130
@@ -92,7 +100,7 @@ generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
 test_that("read_years", {
   file_data <- generate_mock_data_coor()
   data <- read_years(txt = rownames(file_data$data))
-  expect_equivalent(data[123], 2011) 
+  expect_equivalent(data[123], 2011, info = "read_years", quiet = TRUE) 
 })
 
 #' testea la función order_data
@@ -343,6 +351,12 @@ test_that("save_data", {
 
   expect_equivalent(dim(data[["start_1931"]]$data)[2], 5)
   expect_equivalent(dim(data[["start_1931"]]$coor)[1], 5)
+
+  control_data <- generate_mock_data_coor(i_year = 1950, ndata = 1)
+  data_ori <- control_data$data
+  data <- save_data(data_ori = data_ori, control_data = control_data)
+
+  expect_equivalent(dim(data[["start_1931"]]$data)[2], 1)
 })
 
 #' testea la función save_csvs and read_data
@@ -874,6 +888,13 @@ test_that("delete_zones", {
   delete_data <- delete_zones(data)
 
   expect_equivalent(rownames(delete_data$start$coor), c("X1", "X3", "X4", "X5"))
+
+  file_data <- generate_mock_data_coor(i_year = 1981, ndata = 1)
+  file_data$coor[, "lat"] <- 40
+  data <- list("start" = file_data)
+  delete_data <- delete_zones(data)
+
+  expect_equivalent(rownames(delete_data$start$coor), c("X1"))
 })
 
 #' testea la función calculate_reconstruction_statistics
@@ -886,6 +907,56 @@ test_that("calculate_reconstruction_statistics", {
   delete_data <- calculate_reconstruction_statistics(sim = file_data$data[, "X2"], obs = file_data$data[, "X2"])
   expect_equivalent(delete_data, c(1, 0, 0, 0))
 })
+
+#' testea la función main_mediterranean_calculations_
+#'
+#' @return None
+#' @export
+#'
+test_that("main_mediterranean_calculations_", {
+  folder_name <- "test_result"
+
+  # Serie completa
+  file_data <- generate_mock_data_coor(i_year = 1981, ndata = 1)
+  file_data$coor[, "lat"] <- 40
+  file_data$data[is.na(file_data$data)] = 3
+  read_all_data <- list(data_ori = file_data$data, data = file_data$data, coor = file_data$coor)
+  data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
+  expect_equivalent(dim(data_statistics$start_1981$coor)[1], 1)
+
+  # Serie con un NA
+  folder_name <- "test_result"
+  file_data <- generate_mock_data_coor(i_year = 1981, ndata = 1)
+  file_data$coor[, "lat"] <- 40
+  read_all_data <- list(data_ori = file_data$data, data = file_data$data, coor = file_data$coor)
+  data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
+  expect_equivalent(is.null(data_statistics$start_1981), TRUE)
+
+  # 5 series
+  file_data <- generate_mock_data_coor(i_year = 1981, ndata = 5)
+  file_data$coor[, "lat"] <- 40
+  file_data$data[is.na(file_data$data)] = 3
+  read_all_data <- list(data_ori = file_data$data, data = file_data$data, coor = file_data$coor)
+  data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
+  expect_equivalent(dim(data_statistics$start_1981$coor)[1], 5)
+
+  # 5 series con NA
+  file_data <- generate_mock_data_coor(i_year = 1981, ndata = 5)
+  file_data$coor[, "lat"] <- 40
+  read_all_data <- list(data_ori = file_data$data, data = file_data$data, coor = file_data$coor)
+  data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
+  expect_equivalent(dim(data_statistics$start_1981$coor)[1], 5)
+  expect_equivalent(sum(is.na(data_statistics$start_1981$data)), 0)
+
+  # 10 series con NA
+  file_data <- generate_mock_data_coor(i_year = 1981, ndata = 10)
+  file_data$coor[, "lat"] <- 40
+  read_all_data <- list(data_ori = file_data$data, data = file_data$data, coor = file_data$coor)
+  data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
+  expect_equivalent(dim(data_statistics$start_1981$coor)[1], 10)
+  expect_equivalent(sum(is.na(data_statistics$start_1981$data)), 0)
+})
+
 
 #######################################################################################v
 
