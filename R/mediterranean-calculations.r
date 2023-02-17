@@ -50,37 +50,27 @@ mediterranean_calculations <- function(data, max_dist_eval){
 #' @export
 #'
 second_data_fill_data <- function(file_data, fillable_years = 36, max_dist = NA){
-
 	# Retiramos estaciones sin 95% de datos
 	no_nas <- (dim(file_data$data)[1] - apply(file_data$data, c(2), sum_no_nas)) < (dim(file_data$data)[1] * (100 - percentage_filled_data) / 100)
-	control_data <- list(data = file_data$data[, no_nas], coor = file_data$coor[no_nas, ])
+	control_data <- list(data = file_data$data[, no_nas, drop = FALSE], coor = file_data$coor[no_nas, , drop = FALSE])
 
-	if(sum(no_nas) == 0){
-		all_data <- NA
-	}else if(sum(no_nas) == 1){
-		if(sum(is.na(file_data$data)) == 0){
-			all_data <- file_data
-		}else{
-			all_data <- NA
-		}
-	}else{
-		# segundo relleno
-		fill_data <- fill_series(control_data = control_data, min_correlation = min_second_correlation, max_dist = max_dist)
+	#segundo relleno
+	fill_data <- fill_series(control_data = control_data, min_correlation = min_second_correlation, max_dist = max_dist)
+
+	# Retiramo estaciones no completas
+	no_nas <- dim(fill_data$data)[1] - apply(fill_data$data, c(2), sum_no_nas) == 0
+	all_data <- list(data = fill_data$data[, no_nas, drop = FALSE], coor = fill_data$coor[no_nas, , drop = FALSE])
+
+	# Si no tenemos datos, intentamos rellenar alguna serie consigo misma
+	if(dim(all_data$coor)[1] <= 6){
+		# Rellenar 2 o 3 años de datos con la media mensual de la propia estación
+		fill_data <- fill_unfillable_station(data = fill_data, fillable_years = fillable_years)
 
 		# Retiramo estaciones no completas
 		no_nas <- dim(fill_data$data)[1] - apply(fill_data$data, c(2), sum_no_nas) == 0
-		all_data <- list(data = fill_data$data[, no_nas, drop = FALSE], coor = fill_data$coor[no_nas, ])
-
-		# Si no tenemos datos, intentamos rellenar alguna serie consigo misma
-		if(dim(all_data$coor)[1] <= 6){
-			# Rellenar 2 o 3 años de datos con la media mensual de la propia estación
-			fill_data <- fill_unfillable_station(data = fill_data, fillable_years = fillable_years)
-
-			# Retiramo estaciones no completas
-			no_nas <- dim(fill_data$data)[1] - apply(fill_data$data, c(2), sum_no_nas) == 0
-			all_data <- list(data = fill_data$data[, no_nas, drop = FALSE], coor = fill_data$coor[no_nas, ])
-		}
+		all_data <- list(data = fill_data$data[, no_nas, drop = FALSE], coor = fill_data$coor[no_nas, , drop = FALSE])
 	}
+
 	return(all_data)
 }
 

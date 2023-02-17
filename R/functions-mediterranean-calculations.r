@@ -487,7 +487,7 @@ overlap_station_no_0 <- function(control_data){
 #' @export
 #'
 fill_unfillable_station  <- function(data, fillable_years){
-  fillable_data <- data$data[, apply(is.na(data$data), c(2), sum) > 0 & apply(is.na(data$data), c(2), sum) <= fillable_years & apply(is.na(data$data[1:60, ]), c(2), sum) == 0 & apply(is.na(data$data[(dim(data$data)[1]-60+1):dim(data$data)[1], ]), c(2), sum) == 0]
+  fillable_data <- data$data[, apply(is.na(data$data), c(2), sum) > 0 & apply(is.na(data$data), c(2), sum) <= fillable_years & apply(is.na(data$data[1:60, , drop = FALSE]), c(2), sum) == 0 & apply(is.na(data$data[(dim(data$data)[1]-60+1):dim(data$data)[1], , drop = FALSE]), c(2), sum) == 0, drop = FALSE]
 
   if(!is.null(dim(fillable_data))){
     station <- colnames(fillable_data)[1]
@@ -596,7 +596,6 @@ fill_series <- function(control_data, min_correlation, max_dist){
               return_control_data$data[is.na(return_control_data$data[, i_series]), i_series] <- data_refe_ok[is.na(return_control_data$data[, i_series])]
             }
           }
-
         }
       }
     }
@@ -640,10 +639,10 @@ fill_one_series <- function(series, other_series){
     best_funcion = names(pel_functions)[3]
     for(best_funcion in names(pel_functions)){
       shapiro_value <- tryCatch({
-        par_exp <- pel_functions[[best_funcion]](l_mom)
-        cdf_exp <- cdf_functions[[best_funcion]](use_series_comoon, para = par_exp)
-        norm_exp <- stats::qnorm(cdf_exp)
-        shapiro_value <- stats::shapiro.test(norm_exp)$p.value
+        par_exp <- suppressWarnings(pel_functions[[best_funcion]](l_mom))
+        cdf_exp <- suppressWarnings(cdf_functions[[best_funcion]](use_series_comoon, para = par_exp))
+        norm_exp <- suppressWarnings(stats::qnorm(cdf_exp))
+        shapiro_value <- suppressWarnings(stats::shapiro.test(norm_exp)$p.value)
       }, error = function(cond) {
         NA
       })
@@ -658,7 +657,7 @@ fill_one_series <- function(series, other_series){
       # Calculamos sobre todos los datos de la serie a usar para rellenar
       cdf_exp <- cdf_functions[[best_funcion]](use_series_no_0, para = par_exp)
 
-      generate_series <- as.vector(stats::quantile(series_no_0, cdf_exp, na.rm = TRUE))
+      generate_series <- suppressWarnings(as.vector(stats::quantile(series_no_0, cdf_exp, na.rm = TRUE)))
       names(generate_series) <- names(series_no_0)
       return_series[names(return_series)[is.na(return_series)]] <- generate_series[names(return_series)[is.na(return_series)]]
     }
@@ -1170,7 +1169,7 @@ percentage_of_zeros <- function(data) {
   return(100 * sum(data == 0, na.rm = TRUE) / sum(!is.na(data), na.rm = TRUE))
 }
 
-#' Elimina datos si tenemos 5 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70 por ciento de ceros
+#' Elimina datos si tenemos 8 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70 por ciento de ceros se elimina su dato. Elimina también datos si tenemos 5 meses o más seguidos de 0s, si todos los meses implicados tiene menos del 70 por ciento de ceros se eliminan todos.
 #'
 #' @param data datos
 #'
@@ -1193,19 +1192,29 @@ delete_zero <- function(data) {
   }
 
   data_zero <- data
-
-  stations <- colnames(data)
-  station <- stations[3]
+  
+  stations <- colnames(data_zero)
+  station <- stations[1]
   for(station in stations){
-    station_rle <- rle(data[, station])
+    station_rle <- rle(data_zero[, station])
     position <- cumsum(station_rle$lengths)
 
-    zero_groups <- which(!is.na(station_rle$values) & station_rle$values == 0 & station_rle$lengths >= 5)
-    
+    # Elimina datos si tenemos 8 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70 por ciento de ceros se elimina su dato.
+    zero_groups <- which(!is.na(station_rle$values) & station_rle$values == 0 & station_rle$lengths >= 8)
     zero_group <- zero_groups[1]
     for(zero_group in zero_groups){
         range <- c((position[zero_group] - station_rle$lengths[zero_group] + 1) : position[zero_group])
         data_zero[range[months_percentage[station, as.numeric(base::months(dates[range]))] < 70], station] <- NA
+    }
+
+    # Elimina datos si tenemos 5 meses o más seguidos de 0s, si todos los meses implicados tiene menos del 70 por ciento de ceros se eliminan todos.
+    zero_groups <- which(!is.na(station_rle$values) & station_rle$values == 0 & station_rle$lengths >= 5 & station_rle$lengths < 8)
+    zero_group <- zero_groups[1]
+    for(zero_group in zero_groups){
+        range <- c((position[zero_group] - station_rle$lengths[zero_group] + 1) : position[zero_group])
+        if(length(range) == sum(months_percentage[station, as.numeric(base::months(dates[range]))] < 70)){
+          data_zero[range[months_percentage[station, as.numeric(base::months(dates[range]))] < 70], station] <- NA
+        }
     }
 
   }

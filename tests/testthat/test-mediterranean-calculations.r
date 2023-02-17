@@ -843,6 +843,20 @@ test_that("percentage_of_zeros", {
 test_that("delete_zero", {
   file_data <- generate_mock_data_coor()
 
+  file_data$data[c(12:19), "X1"] <- 0
+  # percentage <- percentage_of_zeros(file_data$data[, "X1"])
+
+  file_data$data[c(12:19), "X2"] <- 0
+  file_data$data[c(20:dim(file_data$data)[1]), "X2"] <- 0
+  # percentage <- percentage_of_zeros(file_data$data[, "X2"])
+
+  data <- delete_zero(data = file_data$data)
+
+  expect_equivalent(sum(!is.na(data[c(12:19), "X1"])), 0)
+  expect_equivalent(sum(!is.na(data[c(12:19), "X2"])), 8)
+
+  file_data <- generate_mock_data_coor()
+
   file_data$data[c(12:16), "X1"] <- 0
   # percentage <- percentage_of_zeros(file_data$data[, "X1"])
 
@@ -850,10 +864,14 @@ test_that("delete_zero", {
   file_data$data[c(20:dim(file_data$data)[1]), "X2"] <- 0
   # percentage <- percentage_of_zeros(file_data$data[, "X2"])
 
+  file_data$data[grepl("Feb", rownames(file_data$data)), "X3"] <- 0
+  file_data$data[c(12:16), "X3"] <- 0
+
   data <- delete_zero(data = file_data$data)
 
   expect_equivalent(sum(!is.na(data[c(12:16), "X1"])), 0)
   expect_equivalent(sum(!is.na(data[c(12:16), "X2"])), 5)
+  expect_equivalent(sum(!is.na(data[c(12:16), "X3"])), 5) #No se eliminan porque febrero no cumple la condición
 })
 
 #' testea la función save_delete_data
@@ -924,13 +942,23 @@ test_that("main_mediterranean_calculations_", {
   data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
   expect_equivalent(dim(data_statistics$start_1981$coor)[1], 1)
 
-  # Serie con un NA
+  # Serie con un NA al principio
   folder_name <- "test_result"
   file_data <- generate_mock_data_coor(i_year = 1981, ndata = 1)
   file_data$coor[, "lat"] <- 40
   read_all_data <- list(data_ori = file_data$data, data = file_data$data, coor = file_data$coor)
   data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
   expect_equivalent(is.null(data_statistics$start_1981), TRUE)
+
+  # Serie con un NA en medio
+  folder_name <- "test_result"
+  file_data <- generate_mock_data_coor(i_year = 1981, ndata = 1)
+  file_data$data[is.na(file_data$data)] <- 20
+  file_data$data[round(dim(file_data$data)[1]/2), ] <- NA
+  file_data$coor[, "lat"] <- 40
+  read_all_data <- list(data_ori = file_data$data, data = file_data$data, coor = file_data$coor)
+  data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
+  expect_equivalent(dim(data_statistics$start_1981$coor)[1], 1)
 
   # 5 series
   file_data <- generate_mock_data_coor(i_year = 1981, ndata = 5)
