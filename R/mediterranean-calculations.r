@@ -358,13 +358,6 @@ calculate_statistics <- function(data, data_ori){
 #' @export
 #'
 delete_zones <- function(data){
-	min_north <- 28 # latitud
-
-	i_ini <- names(data)[length(data)]
-	for(i_ini in names(data)){
-		data[[i_ini]]$coor <- data[[i_ini]]$coor[data[[i_ini]]$coor[, "lat"] >= min_north, , drop = FALSE]
-		data[[i_ini]]$data <- data[[i_ini]]$data[, rownames(data[[i_ini]]$coor), drop = FALSE]
-	}
 	return(data)
 }
 
