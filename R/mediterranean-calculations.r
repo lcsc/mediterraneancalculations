@@ -177,7 +177,7 @@ alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
 		    		if(sum(!is.na(Q)) > 0 & length(unique(Q)) > 1){
 			    		q_snht <- snht(cbind(1:length(Q), Q), significance_level) # https://sites.google.com/site/phaenggi23/rscripts
 			    		break_serie <- q_snht$T0x
-	      				pre_post_mean <- round(mean(data_month[c((break_serie + 1):(dim(data_month)[1])), i_series]) / mean(data_month[c(1:break_serie), i_series]), digits = 15)
+	      				pre_post_mean <- round(mean(data_month[c((break_serie + 1):(dim(data_month)[1])), i_series]) - mean(data_month[c(1:break_serie), i_series]), digits = 15)
 	      				pre_post_mean[pre_post_mean == Inf] = NA
 			    		pre_post_mean[pre_post_mean == -Inf] = NA
 			    		pre_post_mean[is.nan(pre_post_mean)] = NA
