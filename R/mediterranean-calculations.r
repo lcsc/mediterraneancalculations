@@ -28,7 +28,7 @@
 mediterranean_calculations <- function(data, max_dist_eval){
 
 	# Eliminamos datos si tenemos 5 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70% de ceros
-	delete_zero_data <- delete_zero(data = data$data)
+	delete_zero_data <- data$data #delete_zero_data <- delete_zero(data = data$data)
 
 	# Control de calidad, se eliminan series completas y datos sueltos inválidos
 	control_data <- quality_control(data = delete_zero_data, coor = data$coor, max_dist = max_dist_eval, max_diff_anomaly = max_diff_anomaly, max_diff_anomaly_0 = max_diff_anomaly_0)
@@ -262,7 +262,7 @@ alexanderson_homogenize <- function(data, folder){
 #'
 calculate_statistics_data <- function(file_data, data_ori){
 
-	mobile_trends_calc <- c(1871, 1901, 1931)
+	mobile_trends_calc <- c(1871, 1916, 1931)
 	i_ini <- read_years(rownames(file_data$data))[1]
 	if(i_ini %in% mobile_trends_calc){ # Calcular mobile_trends_data es muy lento, lo haremos solo en algunos casos
 		calc_mobile_trends_data = TRUE
