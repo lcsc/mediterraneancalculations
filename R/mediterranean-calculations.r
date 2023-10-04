@@ -182,7 +182,7 @@ alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
 			    		pre_post_mean[pre_post_mean == -Inf] = NA
 			    		pre_post_mean[is.nan(pre_post_mean)] = NA
 			    		if (q_snht$T0 > q_snht$Tc && !is.na(pre_post_mean) && pre_post_mean != 1 && pre_post_mean != 0) {       			
-		        			data_save_month[c(1:break_serie), i_series] <- pre_post_mean * data_month[c(1:break_serie), i_series]
+		        			data_save_month[c(1:break_serie), i_series] <- pre_post_mean + data_month[c(1:break_serie), i_series]
 		        			# print(paste(i_month, i_series, break_serie))
 		        			break_points[i_month, i_series, i_snht] <- rownames(data_month)[break_serie]
 		        			change_values[i_month, i_series, i_snht] <- break_serie
