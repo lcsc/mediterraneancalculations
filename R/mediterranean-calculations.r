@@ -262,13 +262,13 @@ alexanderson_homogenize <- function(data, folder){
 #'
 calculate_statistics_data <- function(file_data, data_ori){
 
-	mobile_trends_calc <- c(1871, 1916, 1931)
+	mobile_trends_calc <- c(1871, 1910, 1931)
 	i_ini <- read_years(rownames(file_data$data))[1]
-	if(i_ini %in% mobile_trends_calc){ # Calcular mobile_trends_data es muy lento, lo haremos solo en algunos casos
-		calc_mobile_trends_data = TRUE
-	}else{
+	# if(i_ini %in% mobile_trends_calc){ # Calcular mobile_trends_data es muy lento, lo haremos solo en algunos casos
+	# 	calc_mobile_trends_data = TRUE
+	# }else{
 		calc_mobile_trends_data = FALSE
-	}
+	# }
 
 	# Serie promedio de todo el país
 	average <- apply(file_data$data, c(1), mean)

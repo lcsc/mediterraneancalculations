@@ -54,7 +54,7 @@ cdf_functions <- list(exp = lmom::cdfexp, gam = lmom::cdfgam, gev = lmom::cdfgev
 
 alexanderson_folder <- "results"
 
-i_inis <- c(1871, 1916, 1931, 1951, 1961, 1981)
+i_inis <- c(1871, 1910, 1931, 1951, 1961, 1981)
 i_end <- 2022
 
 # snht critical levels (simulated by Khaliq and Ouarda 2007)
