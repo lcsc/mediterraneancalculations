@@ -1,5 +1,5 @@
 To install the package, it can be done directly in R (we recommend upgrading to the latest available version beforehand) with the instructions:
-```
+```r
 install.packages("devtools")
 library(devtools)
 install_local('mediterraneancalculations_0.2-2.tar.gz') # This file has to be in the R directory
@@ -8,7 +8,7 @@ More installation ways can be seen here https://riptutorial.com/r/example/5556/i
 
 
 The package code has been posted on https://github.com/lcsc/mediterraneancalculations And it can be installed from Github as follows
-```
+```r
 install.packages("devtools")
 library(devtools)
 install_github("lcsc/mediterraneancalculations")
@@ -16,12 +16,12 @@ install_github("lcsc/mediterraneancalculations")
 
 
 Once the package is installed, please load the following:
-```
+```r
 library(mediterraneancalculations)
 ```
 
 We call the main function:
-```
+```r
 main_mediterranean_calculations(file_data, file_coor)
 ```
 
@@ -29,7 +29,7 @@ Where the parameters are:
 1. file_data: CSV file of station data. # This file has to be in the R directory
 2. file_coor: CSV file of station coordinates. # This file has to be in the R directory
 In the case of the example files, the usage would be:
-```
+```r
 result <- main_mediterranean_calculations("israel_data.csv", "israel_coor.csv")
 ```
 
@@ -57,7 +57,7 @@ The results should be, in the "results" folder that will contain 5 data files:
 And it will also contain a coordinate file for each data file.
 
 A mediterranean_calculations.rds file will also be generated with the necessary data for the study. This file can be loaded with:
-```
+```r
 data_save <- readRDS("mediterranean_calculations.rds")
 ```
 
@@ -78,3 +78,17 @@ The content of the files can be explored for each of the result groups (using se
 * magnitude_change_percentage_homog: Magnitude of change in % in the series before homogeneity testing and correction.
 * statistics_data_removed: Description of the origin of the data in the final series (original or reconstructed).
 * availability_data_original: Coordinates with original (0 or 1) data in each month.
+
+A sample code to open these RDS files, for example, the ones from [Israel](https://zenodo.org/records/10022618/files/Israel.rds): 
+```r
+results_israel <- readRDS("Israel.rds")
+
+# Identify the different results groups
+names(results_israel)
+
+# Select the different groups, for example the coordinates of the stations with data since 1981.
+coordinates <- results_israel$start_1871$coor
+
+# Magnitude of change in mm in spring for stations with data since 1951.
+Spring_change <- results_israel$start_1951$magnitude_change_mm$spring
+```
