@@ -16,57 +16,57 @@
 #####################################################################
 
 
-#' Hace el control de calidad
-#' Control de calidad: Se estaciones con menos de 20 años de datos y usando las 10 más correlacionadas a menos de 200 km, se desechan los datos con un percentil de diferencia de más de 0.6.
+#' Performs quality control
+#' Quality control: Stations with less than 20 years of data are removed, and using the 10 most correlated stations within 200 km, data with a percentile difference greater than 0.6 are discarded.
 #'
-#' @param data ruta del fichero de datos
-#' @param max_dist_eval máxima distancia entre 2 estaciones para usar una para evaluar una con la otra
+#' @param data path to the data file
+#' @param max_dist_eval maximum distance between two stations to use one to evaluate or complete the other
 #'
-#' @return data y coor con los datos que no pasan el control eliminados
+#' @return data and coordinates with data that do not pass the control removed
 #' @export
 #'
 mediterranean_calculations <- function(data, max_dist_eval){
 
-	# Eliminamos datos si tenemos 5 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70% de ceros
+	# Remove data if there are 5 or more consecutive months of zeros, if any of the months involved has less than 70% zeros
 	delete_zero_data <- delete_zero(data = data$data)
 
-	# Control de calidad, se eliminan series completas y datos sueltos inválidos
+	# Quality control, complete series and invalid loose data are removed
 	control_data <- quality_control(data = delete_zero_data, coor = data$coor, max_dist = max_dist_eval, max_diff_anomaly = max_diff_anomaly, max_diff_anomaly_0 = max_diff_anomaly_0)
 
 	return(control_data)
 }
 
-#' Realiza un segundo relleno
-#' Para cada base de datos (1870, 1900...)
-#' Estaciones con más del 90 o 95% de datos rellenos
-#' Ordenamos las estaciones por correlación (mínima 0.5) y rellenamos usando los 10 métodos...
-#' Las estaciones sin relleno total las tiramos
+#' Performs a second fill
+#' For each dataset (1870, 1900...)
+#' Stations with more than 90 or 95% of filled data
+#' Sort the stations by correlation (minimum 0.5) and fill using the 10 methods...
+#' Stations without total fill are discarded
 #'
-#' @param file_data ruta del fichero de datos
-#' @param fillable_years años rellenables con la media mensual de la propia estación
-#' @param max_dist máxima distancia permitida para el relleno
+#' @param file_data path to the data file
+#' @param fillable_years years that can be filled with the station's monthly average
+#' @param max_dist maximum allowed distance for filling
 #'
 #' @return None
 #' @export
 #'
 second_data_fill_data <- function(file_data, fillable_years = 36, max_dist = NA){
-	# Retiramos estaciones sin 95% de datos
+	# Remove stations without 95% of data
 	no_nas <- (dim(file_data$data)[1] - apply(file_data$data, c(2), sum_no_nas)) < (dim(file_data$data)[1] * (100 - percentage_filled_data) / 100)
 	control_data <- list(data = file_data$data[, no_nas, drop = FALSE], coor = file_data$coor[no_nas, , drop = FALSE])
 
-	#segundo relleno
+	# Second fill
 	fill_data <- fill_series(control_data = control_data, min_correlation = min_second_correlation, max_dist = max_dist)
 
-	# Retiramo estaciones no completas
+	# Remove incomplete stations
 	no_nas <- dim(fill_data$data)[1] - apply(fill_data$data, c(2), sum_no_nas) == 0
 	all_data <- list(data = fill_data$data[, no_nas, drop = FALSE], coor = fill_data$coor[no_nas, , drop = FALSE])
 
-	# Si no tenemos datos, intentamos rellenar alguna serie consigo misma
+	# If there is no data, try to fill some series with itself
 	if(dim(all_data$coor)[1] <= 6){
-		# Rellenar 2 o 3 años de datos con la media mensual de la propia estación
+		# Fill 2 or 3 years of data with the station's own monthly average
 		fill_data <- fill_unfillable_station(data = fill_data, fillable_years = fillable_years)
 
-		# Retiramo estaciones no completas
+		# Remove incomplete stations
 		no_nas <- dim(fill_data$data)[1] - apply(fill_data$data, c(2), sum_no_nas) == 0
 		all_data <- list(data = fill_data$data[, no_nas, drop = FALSE], coor = fill_data$coor[no_nas, , drop = FALSE])
 	}
@@ -74,16 +74,16 @@ second_data_fill_data <- function(file_data, fillable_years = 36, max_dist = NA)
 	return(all_data)
 }
 
-#' Realiza un segundo relleno
-#' Para cada base de datos (1870, 1900...)
-#' Estaciones con más del 90 o 95% de datos rellenos
-#' Ordenamos las estaciones por correlación (mínima 0.5) y rellenamos usando los 10 métodos...
-#' Las estaciones sin relleno total las tiramos
+#' Performs a second fill
+#' For each dataset (1870, 1900...)
+#' Stations with more than 90 or 95% of filled data
+#' Stations are sorted by correlation (minimum 0.5), and filling is done using the 10 methods...
+#' Stations without total fill are discarded
 #'
-#' @param data data y coor 
-#' @param max_dist_eval maxima distancia para el relleno
+#' @param data data and coordinates
+#' @param max_dist_eval maximum distance for filling
 #'
-#' @return data y coor
+#' @return data and coordinates
 #' @export
 #'
 second_data_fill <- function(data, max_dist_eval = NA){
@@ -92,11 +92,11 @@ second_data_fill <- function(data, max_dist_eval = NA){
   for(i_ini in names(data)){
   	file_data <- data[[i_ini]]
 
-  	# Años rellenables con la media mensual de la propia estación
+  	# Years that can be filled with the station's monthly average
   	if(i_ini == paste0("start_", i_inis[length(i_inis)])){
-  		fillable_years <- 24 # 2 años
+  		fillable_years <- 24 # 2 years
   	}else{
-  		fillable_years <- 36 # 3 años
+  		fillable_years <- 36 # 3 years
   	}
 
   	data_fill <- second_data_fill_data(file_data = file_data, fillable_years = fillable_years, max_dist = max_dist_eval)
@@ -107,19 +107,17 @@ second_data_fill <- function(data, max_dist_eval = NA){
 	return(all_data)
 }
 
-#' Homogeneizar - test de Alexanderson
-#' Lo usamos en code_web_maps/snht_functions.R
-#' Existe también librería snht de R
-#' -- Serie de referencia, compara y corrige
-#' Para cada base de datos (1870, 1900...)
-#' Elegimos las 5 series más correlacionadas usandos las serie de diferencias
-#' Con las 5 hacemos una media ponderada, (correlación * dato1 + ...) / sum(correlaciones) y será la serie de referencia
-#' Alexanderson nos dará un punto de ruptura y un valor ratio por el que multiplicar la parte antigua... iterar mientras de puntos de ruptura
-#' Guardar estadísticos de inhomogeneidades. Básicamente número de datos cambiados en cada series y momento de la inhomogeneidad. 
-#' CSV con número de datos cambiados y CSV con punto de inhomogeneidad - todo x 12 meses
+#' Homogenization - Alexanderson test
+#' Reference series, compares and corrects
+#' For each dataset (1870, 1900...)
+#' The 5 most correlated series are chosen using the difference series
+#' A weighted average is made with the 5 series (correlation * data1 + ...) / sum(correlations), which will be the reference series
+#' Alexanderson will give a breakpoint and a ratio value to multiply the older part by... iterate while breakpoints are given
+#' Save statistics on inhomogeneities. Basically, the number of data points changed in each series and the time of the inhomogeneity.
+#' CSV with the number of data points changed and CSV with inhomogeneity point - all x 12 months
 #'
-#' @param file_data ruta del fichero de datos
-#' @param no_use_series series que no se homogeneizarán
+#' @param file_data path to the data file
+#' @param no_use_series series that will not be homogenized
 #'
 #' @return None
 #' @export
@@ -130,11 +128,11 @@ alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
 	significance_level <- 100 * (1 - 0.01)
 	data_save <- file_data$data
 
-	# Buscamos inhomogenidades solo en las series que no estaban ya en los periodos previos
+	# Search for inhomogeneities only in series that were not already in previous periods
 	all_series <- colnames(file_data$data)
 	use_series <- all_series[!all_series %in% no_use_series]
 
-	# Diferencias de un día respecto al anterior
+	# Differences from one day to the next
 	differences_0 <- file_data$data
 	differences_1 <- rbind(rep(0, dim(differences_0)[2]), differences_0[c(1:(dim(differences_0)[1]-1)), ])
 	differences <- differences_0 - differences_1
@@ -164,7 +162,7 @@ alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
 		    		i_order <- names(i_data_cor)[order(i_data_cor, decreasing = TRUE)][c(1:i_estations)] #Cinco estaciones más correlacionadas
 		    		i_data_cor_select <- i_data_cor[i_order]
 
-		    		# Media ponderada
+		    		# Weighted average
 		    		average <- t(i_data_cor_select * t(data_month[, i_order])) / sum(i_data_cor_select)
 		    		average <- apply(average, c(1), sum)
 
@@ -197,12 +195,12 @@ alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
 	return(list(data = data_save, break_points = break_points, change_values = change_values))
 }
 
-#' Test de Alexanderson para todos los ficheros disponibles (que han pasado el segundo relleno con éxito)
+#' Alexanderson test for all available files (which have successfully passed the second fill)
 #'
-#' @param data data y coor
-#' @param folder directorio para guardar los datos de salida
+#' @param data data and coordinates
+#' @param folder directory to save the output files
 #'
-#' @return data y coor
+#' @return data and coordinates
 #' @export
 #'
 alexanderson_homogenize <- function(data, folder){
@@ -216,7 +214,7 @@ alexanderson_homogenize <- function(data, folder){
     	file_data <- data[[i_ini]]
     	if(length(file_data) > 1 && dim(file_data$coor)[1] > 0){
     		if(dim(file_data$coor)[1] > 1){
-	    		# Las estaciones que ya estaban en el grup precio han de ser exáctamente las mismas
+	    		# The stations already in the previous group must be exactly the same
 	    		if(!is.null(file_data_pre)){
 	    			delete_stations <- pre_stations[!pre_stations %in% colnames(file_data$data)]
 	    			if(length(delete_stations) > 0){
@@ -227,7 +225,7 @@ alexanderson_homogenize <- function(data, folder){
 	    		}
 	    		homogenize_data <- alexanderson_homogenize_data(file_data = file_data, no_use_series = pre_stations)
 		    	
-	    		# Generamos estadísticos pre homogenización
+	    		# Generate pre-homogenization statistics
 	    		mkTrend_pval <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_pval)
 
 	  			mkTrend_slp <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_slp)
@@ -246,16 +244,15 @@ alexanderson_homogenize <- function(data, folder){
 	return(data_save)
 }
 
-#' Calcula estadísticos de los datos
-#' Tendencia mensual, estacional y anual, paquete Trend, función sens.slope
-#' Sumar 1 a todo para evitar 0s
-#' Significación, paquete modifiedmk, funsión bbsmk
-#' Serie promedio de todo el país
-#' SPI a escalas 3, 12, y 24 de cada serie, importante que sea imposible invertir las operaciones
-#' Código Sergio para generar arrays y hacer figuras de tendencia
+#' Calculates statistics for the data
+#' Monthly, seasonal, and annual trends, Trend package, sens.slope function
+#' Add 1 to everything to avoid zeros
+#' Significance, modifiedmk package, bbsmk function
+#' National average series
+#' SPI at scales 3, 12, and 24 for each series, important to ensure operations cannot be reversed
 #'
-#' @param file_data datos y coordenadas
-#' @param data_ori datos originales
+#' @param file_data data and coordinates
+#' @param data_ori original data
 #'
 #' @return None
 #' @export
@@ -264,16 +261,16 @@ calculate_statistics_data <- function(file_data, data_ori){
 
 	mobile_trends_calc <- c(1871, 1901, 1931)
 	i_ini <- read_years(rownames(file_data$data))[1]
-	if(i_ini %in% mobile_trends_calc){ # Calcular mobile_trends_data es muy lento, lo haremos solo en algunos casos
+	if(i_ini %in% mobile_trends_calc){ # Calculating mobile_trends_data is very slow, so it will only be done for some cases
 		calc_mobile_trends_data = TRUE
 	}else{
 		calc_mobile_trends_data = FALSE
 	}
 
-	# Serie promedio de todo el país
+	# National average series
 	average <- apply(file_data$data, c(1), mean)
 
-	# SPI a escalas 3, 9, 12, y 24 de cada serie
+	# SPI at scales 3, 9, 12, and 24 for each series
 	spi_data <- list()
 	spi_data[["scale_3"]] <- SPEI::spi(as.matrix(file_data$data), scale = 3, verbose = FALSE)$fitted
 	spi_data[["scale_3"]][is.na(spi_data[["scale_3"]])] = 0
@@ -286,23 +283,23 @@ calculate_statistics_data <- function(file_data, data_ori){
 	rownames(spi_data[["scale_3"]]) <- rownames(file_data$data)
 	rownames(spi_data[["scale_12"]]) <- rownames(file_data$data)
 
-	################ Código Sergio para generar arrays y hacer figuras de tendencia
+	################ Generate arrays and create trend figures
 	mkTrend_pval <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_pval)
 
-	# Versión corregida de pval
+	# Corrected version of pval
 	mkTrend_pval_grid_points <- list()
 	for(name in names(mkTrend_pval)){
-  	mkTrend_pval_grid_points[[name]] <- stats::p.adjust(mkTrend_pval[[name]], "BH") # Corección explicada en el paper "The Stippling Shows Statistically Significant Grid Points"
+  	mkTrend_pval_grid_points[[name]] <- stats::p.adjust(mkTrend_pval[[name]], "BH") # Correction explained in the paper "The Stippling Shows Statistically Significant Grid Points"
 	}
 
 	mkTrend_slp <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_slp)
 
 	percentage <- calc_data_year_month_station(data = file_data$data, calc_function = calc_percentage)
 
-	# Promedios
+	# Averages
 	data_mean <- calc_data_year_month_station(data = file_data$data, calc_function = base::mean)
 
-	# Coeficientes de variación, desviación estándar anual y estacional
+	# Coefficients of variation, annual and seasonal standard deviation
 	cv <- calc_data_year_month_station(data = file_data$data, calc_function = coef_var)
 
 	dry_spell_trend_data <- list()
@@ -311,13 +308,13 @@ calculate_statistics_data <- function(file_data, data_ori){
 	dry_spell_trend_data[["scale_12"]] <- t(apply(spi_data[["scale_12"]][c(13:dim(spi_data[["scale_12"]])[1]), , drop = FALSE], c(2), dry_spell_trend, threshold = 0))
 	colnames(dry_spell_trend_data[["scale_12"]]) <- c("p.dur", "p.mag", "trend.dur", "trend.mag")
 
-	if(calc_mobile_trends_data){ #Solo lo calculamos para algunas fechas
+	if(calc_mobile_trends_data){ # It only calculates it for some dates
 		mobile_trends_data <- calc_data_year_month_station(data = file_data$data, calc_function = mobile_trends)
 	}else{
 		mobile_trends_data <- NA
 	}
 
-	# Indicamos con un 1 que el dato original no era un NA y con un 0 que era un NA
+	# Indicates with a 1 that the original data was not NA and with a 0 that it was NA
   data_change <- data_ori[rownames(file_data$data), colnames(file_data$data), drop = FALSE]
   data_change[!is.na(data_change)] <- 1
   data_change[is.na(data_change)] <- 0
@@ -330,12 +327,12 @@ calculate_statistics_data <- function(file_data, data_ori){
 	return(list(coor = file_data$coor, data_change = data_change, regional_series = average, pvalue_trend = mkTrend_pval, pvalue_corrected_trend = mkTrend_pval_grid_points, magnitude_change_mm = mkTrend_slp, magnitude_change_percentage = percentage, average_precipitation_stations = data_mean, cv_precipitation_stations = cv, dry_spell_trend_data = dry_spell_trend_data, mobile_trends_data = mobile_trends_data, change_values_homog = file_data$change_values, break_points_homog = file_data$break_points, pvalue_trend_homog = file_data$mkTrend_pval_pre_homogenize, magnitude_change_mm_homog = file_data$mkTrend_slp_homogenize, magnitude_change_percentage_homog = file_data$percentage_homogenize))
 }
 
-#' Salida final con todos los estadíticos, serie regional promedio, tendencias, SPI...
+#' Final output with all statistics, regional average series, trends, SPI...
 #'
-#' @param data data y coor 
-#' @param data_ori data original
+#' @param data data and coordinates 
+#' @param data_ori original data
 #'
-#' @return data and coor
+#' @return data and coordinates
 #' @export
 #'
 calculate_statistics <- function(data, data_ori){
@@ -350,15 +347,15 @@ calculate_statistics <- function(data, data_ori){
 	return(data_save)
 }
 
-#' Por debajo de 28 grados norte, eliminar estaciones
+#' Below 28 degrees north, remove stations
 #'
-#' @param data data y coor 
+#' @param data data and coordinates
 #'
-#' @return data and coor
+#' @return data and coordinates
 #' @export
 #'
 delete_zones <- function(data){
-	min_north <- 28 # latitud
+	min_north <- 28 # latitude
 
 	i_ini <- names(data)[length(data)]
 	for(i_ini in names(data)){
@@ -368,25 +365,25 @@ delete_zones <- function(data){
 	return(data)
 }
 
-#' Lee los ficheros de precipitación, calcula estadísticos y guarda los resultados
-#' Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)
+#' Reads precipitation files, calculates statistics, and saves the results
+#' The input files are 2 CSVs: one with coordinates in degrees (stations in rows and lat/lon in columns) and the other with monthly data (dates in rows and stations in columns)
 #'
-#' @param file_data ruta del fichero de datos
-#' @param file_coor ruta del fichero de coordenadas
+#' @param file_data path to the data file
+#' @param file_coor path to the coordinates file
 #'
 #' @return None
 #' @export
 #'
 main_mediterranean_calculations <- function(file_data, file_coor){
-	pb <- utils::txtProgressBar(min = 0,  # Valor mínimo de la barra de progreso
-                     max = 100,  # Valor máximo de la barra de progreso
-                     style = 3,  # Estilo de la barra (también style = 1 y style = 2)
-                     width = 50, # Ancho de la barra. Por defecto: getOption("width")
+	pb <- utils::txtProgressBar(min = 0,  # Minimum value of the progress bar
+                     max = 100,  # Maximum value of the progress bar
+                     style = 3,  # Style of the bar (other styles: style = 1 and style = 2)
+                     width = 50, # Width of the bar. Default: getOption("width")
                      char = "=")
 
 	folder <- alexanderson_folder
 
-	# Leemos los datos
+	# Read the data
 	read_all_data <- read_data(file_data, file_coor)
 
 	utils::setTxtProgressBar(pb, 5)
@@ -406,11 +403,11 @@ main_mediterranean_calculations <- function(file_data, file_coor){
 	return(data_statistics)
 }
 
-#' Calcula los estadísticos para un país
+#' Calculates statistics for a country
 #'
-#' @param read_all_data datos de entrada
-#' @param folder carpeta donde guarda ficheros
-#' @param pb barra de progreso
+#' @param read_all_data input data
+#' @param folder directory where files are saved
+#' @param pb progress bar
 #'
 #' @return None
 #' @export
@@ -420,28 +417,28 @@ main_mediterranean_calculations_ <- function(read_all_data, folder, pb = NULL){
 	max_dist_fill <- 200
 	max_dist_second_eval <- 200
 
-	# A) Control de calidad
+	# A) Quality control
 	control_data <- mediterranean_calculations(data = read_all_data, max_dist_eval = max_dist_eval)
 	statistics_data_removed <- save_delete_data(ori_data = read_all_data$data, process_data = control_data$data, folder = folder)
 
 	if(!is.null(pb)) { utils::setTxtProgressBar(pb, 15) }
 
-	# B) Reconstrucción - Primer relleno y segundo relleno solo entre los datos ya seleccionados en cada base de datos
+	# B) Reconstruction - First fill and second fill, only between the data already selected in each dataset
 	fill_data <- fill_series(control_data = control_data, min_correlation = min_correlation, max_dist = max_dist_fill)
 	data_first_fill <- save_data(data_ori = read_all_data$data_ori, control_data = fill_data)
 	data_second_fill <- second_data_fill(data = data_first_fill, max_dist_eval = max_dist_second_eval)
 
-	# Eliminar series por debajo de 28 grados Norte
+	# Remove stations below 28 degrees north
 	data_second_fill_zone <- delete_zones(data = data_second_fill)
 
 	if(!is.null(pb)) { utils::setTxtProgressBar(pb, 35) }
 
-	# C) Homogeneización - test de Alexanderson
+	# C) Homogenization - Alexanderson test
 	data_homogenize <- alexanderson_homogenize(data = data_second_fill_zone, folder = folder)
 
 	if(!is.null(pb)) { utils::setTxtProgressBar(pb, 55) }
 
-	# D) Análisis - Salida final: serie regional promedio, tendencias y SPI
+	# D) Analysis - Final output: regional average series, trends, and SPI
 	data_statistics <- calculate_statistics(data = data_homogenize, data_ori = read_all_data$data_ori)
 
 	if(!is.null(pb)) { utils::setTxtProgressBar(pb, 93) }

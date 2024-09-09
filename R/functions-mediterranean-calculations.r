@@ -29,7 +29,7 @@ NULL
 #' @importFrom utils setTxtProgressBar txtProgressBar
 NULL
 
-### Variables globales
+### Global variables
 crs84 <- 4326 #https://spatialreference.org/ref/epsg/wgs-84/ "epsg:4326"
 crs84m <- 4978  #https://epsg.io/4978 "EPSG:4978"
 
@@ -171,9 +171,9 @@ snht_cval <- matrix(data = c(
 
 ####################
 
-#' Lee los años de cadenas de texto que terminan con los años
+#' Reads the years from text strings that end with years
 #'
-#' @param txt texto o vector de textos
+#' @param txt text or vector of texts
 #'
 #' @return list
 #' @export
@@ -182,9 +182,9 @@ read_years <- function(txt){
   return(as.numeric(substr(txt, nchar(txt) - 4 + 1, nchar(txt))))
 }
 
-#' Ordena los datos y devuelve una lista con el orden
+#' Sorts the data and returns a list with the order
 #'
-#' @param data datos
+#' @param data data
 #'
 #' @return list
 #' @export
@@ -197,41 +197,41 @@ order_data <- function(data){
   return(data_order)
 }
 
-#' Número de datos distintos de NA
+#' Number of non-NA data points
 #'
-#' @param data datos
+#' @param data data
 #'
-#' @return número de datos no NAs
+#' @return number of non-NA data points
 #' @export
 #'
 sum_no_nas <- function(data){
   return(sum(!is.na(data)))
 }
 
-#' Primeros datos válidos (no NAs)
+#' First valid data points (non-NAs)
 #'
-#' @param data datos
-#' @param n_reference_stations numero de datos a devolver
+#' @param data data
+#' @param n_reference_stations number of data points to return
 #'
-#' @return primeros datos distintos de NA
+#' @return first non-NA data points
 #' @export
 #'
 select_data <- function(data, n_reference_stations){
   return(data[!is.na(data)][1:n_reference_stations])
 }
 
-#' Anomalías de los datos
+#' Data anomalies
 #'
-#' @param data datos mensuales
+#' @param data monthly data
 #'
-#' @return anomalías de los datos
+#' @return data anomalies
 #' @export
 #'
 apply_ecdf_month <- function(data){
 
   l_mom <- suppressWarnings(lmom::samlmu(data, nmom = 4, sort.data = TRUE, ratios = TRUE, trim = 0))
 
-  # Seleccionamos la mejor de las 10 funciones
+  # Select the best of the 10 functions
   p.value = array(NA, dim = length(pel_functions), dimnames = list(names(pel_functions)))
   best_funcion = names(pel_functions)[3]
   for(best_funcion in names(pel_functions)){
@@ -248,7 +248,7 @@ apply_ecdf_month <- function(data){
   if(sum(!is.na(p.value)) > 0){
     best_funcion <- names(pel_functions)[which(p.value == max(p.value, na.rm = TRUE))[1]]
 
-    # Utlizamos la mejor de las 10 funciones
+    # Use the best of the 10 functions
     par_exp <- pel_functions[[best_funcion]](l_mom)
     cdf_exp <- cdf_functions[[best_funcion]](data, para = par_exp)
   }else{
@@ -258,11 +258,11 @@ apply_ecdf_month <- function(data){
   return(cdf_exp)
 }
 
-#' Anomalías de los datos mensuales
+#' Monthly data anomalies
 #'
-#' @param data datos mensuales
+#' @param data monthly data
 #'
-#' @return anomalías de los datos
+#' @return data anomalies
 #' @export
 #'
 apply_ecdf <- function(data){
@@ -275,14 +275,14 @@ apply_ecdf <- function(data){
   return(data)
 }
 
-#' Devuelve la correlación entre las estaciones
-#' Sin tener en cuenta las que están a más de 200 km (NA en esos casos)
+#' Returns the correlation between stations
+#' Ignoring those that are more than 200 km away (NA in those cases)
 #'
-#' @param data datos mensuales
-#' @param coor coordenadas de las estaciones que corresponden con data
-#' @param max_dist distancia máxima entre las series a utilizar
+#' @param data monthly data
+#' @param coor coordinates of the stations corresponding to the data
+#' @param max_dist maximum distance between the series to be used
 #'
-#' @return correlación entre las estaciones
+#' @return correlation between stations
 #' @export
 #'
 near_correlations <- function(data, coor, max_dist){
@@ -294,7 +294,7 @@ near_correlations <- function(data, coor, max_dist){
   coordinates[, ] <- sf::st_coordinates(points_data)[, c("X", "Y")]
 
 
-  # Eliminar estaciones a más de 200 km para los cálculos del control de calidad
+  # Remove stations more than 200 km away for quality control calculations
   dist <- SpatialTools::dist1(coordinates)
   colnames(dist) <- rownames(dist) <- rownames(coor)
   if(!is.na(max_dist)){
@@ -303,7 +303,7 @@ near_correlations <- function(data, coor, max_dist){
   dist[dist == 0] <- NA
 
   data_cor_list <- list()
-  # Calcular correlaciones (por meses)
+  # Calculate correlations (by months)
   while(length(data_cor_list) <= 11){
     data_month <- data[(c(1:dim(data)[1])-1)%%12 == length(data_cor_list), , drop = FALSE]
     name_month <- substr(rownames(data_month)[1], 4, 6)
@@ -314,18 +314,18 @@ near_correlations <- function(data, coor, max_dist){
   return(data_cor_list)
 }
 
-#' Devuelve las estaciones por orden de cercanía
-#' Sin tener en cuenta las que están a más de 200 km (NA en esos casos)
+#' Returns stations in order of proximity
+#' Ignoring those that are more than 200 km away (NA in those cases)
 #'
-#' @param data datos mensuales
-#' @param coor coordenadas de las estaciones que corresponden con data
-#' @param max_dist distancia máxima entre las series a utilizar
+#' @param data monthly data
+#' @param coor coordinates of the stations corresponding to the data
+#' @param max_dist maximum distance between the series to be used
 #'
-#' @return correlación entre las estaciones
+#' @return correlation between stations
 #' @export
 #'
 near_estations <- function(data, coor, max_dist){
-  # Pasar coordenadas de grados a metros
+  # Convert coordinates from degrees to meters
   points_data <- sf::st_sfc(sf::st_multipoint(as.matrix(coor[, c("lon", "lat"), drop = FALSE])), crs = crs84)
   # plot(world)
   # plot(points_data, add = TRUE, col = "red")
@@ -333,7 +333,7 @@ near_estations <- function(data, coor, max_dist){
   coordinates <- as.matrix(coor)
   coordinates[, ] <- sf::st_coordinates(points_data)[, c("X", "Y"), drop = FALSE]
 
-  # Eliminar estaciones a más de 200 km para los cálculos del control de calidad
+  # Remove stations more than 200 km away for quality control calculations
   dist <- SpatialTools::dist1(coordinates)
   colnames(dist) <- rownames(dist) <- rownames(coor)
   if(!is.na(max_dist)){
@@ -341,24 +341,24 @@ near_estations <- function(data, coor, max_dist){
   }
   dist[dist == 0] <- NA
 
-  #Ordenar según distancias 
+  # Sort by distances
   data_order <- order_data(data = dist)
 
   return(data_order)
 }
 
-#' Control de calidad
-#' Estaciones con menos de 20 años de datos retirar
-#' Usando las 10 más cercanas a menos de 200 km, desechar si promedio de percentil se diferencia en más de 0.6 
-#' o en más de 0.5 para datos 0
+#' Quality control
+#' Stations with less than 20 years of data are removed
+#' Using the 10 closest within 200 km, discard if the average percentile differs by more than 0.6
+#' or more than 0.5 for data points with a value of 0
 #'
-#' @param data datos  
-#' @param coor coordenadas
-#' @param max_dist máxima distancia entre 2 estaciones para usar una para evaluar o completar la otra
-#' @param max_diff_anomaly máxima diferencia de anomalías para mantener dato en el control 
-#' @param max_diff_anomaly_0 máxima diferencia de anomalías para mantener dato en el control, si el dato es 0
+#' @param data data  
+#' @param coor coordinates
+#' @param max_dist maximum distance between two stations to use one to evaluate or complete the other
+#' @param max_diff_anomaly maximum anomaly difference to keep data in quality control
+#' @param max_diff_anomaly_0 maximum anomaly difference to keep data in quality control, if the data point is 0
 #'
-#' @return data y coor con los datos que no pasan el control eliminados
+#' @return data and coor with data points that do not pass the control removed
 #' @export
 #'
 quality_control <- function(data, coor, max_dist, max_diff_anomaly, max_diff_anomaly_0){
@@ -366,13 +366,13 @@ quality_control <- function(data, coor, max_dist, max_diff_anomaly, max_diff_ano
   max_usable_neighbours <- 10
   min_usable_neighbours <- 4
 
-  # Eliminar estaciones con menos de min_years años de datos
+  # Remove stations with less than min_years of data
   min_n_data <- min_years * 12
   no_nas <- apply(data, c(2), sum_no_nas) > min_n_data
   data <- data[, no_nas, drop = FALSE]
   coor <- coor[colnames(data), , drop = FALSE]
 
-  # Eliminar estaciones con menos de 1 año de datos para algún mes
+  # Remove stations with less than 1 year of data for any month
   no_nas <- NA
   i <- 1
   for(i in c(0:11)){
@@ -389,31 +389,31 @@ quality_control <- function(data, coor, max_dist, max_diff_anomaly, max_diff_ano
   all_series <- colnames(data)
   data_correct <- as.matrix(data) 
 
-  #Calcular anomalías de cada dato dentro de cada estación
+  # Calculate anomalies for each data point within each station
   data_percent <- apply(data, c(2), apply_ecdf)
 
-  ### Correlación por meses
+  ### Correlation by months
   data_near <- near_estations(data, coor, max_dist = max_dist)
 
   if(length(data_near) > 0){
     months <- unique(substr(rownames(data), 4, 6))
-    # Para cada mes
+    # For each month
     i_month <- months[12]
     for(i_month in months){
-      # Seleccionamos los datos de mes
+      # Select data for the month
       data_percent_month <- data_percent[grepl(i_month, rownames(data_percent)), ]
 
-      #Ordenar según distancias
+      # Sort by distances
       data_order <- data_near
       if(length(data_order) > 0){
-        # 10 series más cercanas
+        # 10 closest series
         i_serie <- all_series[1]
         for(i_serie in all_series){
-          i_order <- data_order[[i_serie]][1:max_usable_neighbours] #Orden de cercanía con las otras series
+          i_order <- data_order[[i_serie]][1:max_usable_neighbours] # Order of proximity to the other series
           i_order <- i_order[!is.na(i_order)]
           if(length(i_order) >= min_usable_neighbours){
             data_ori <- data[rownames(data_percent_month), i_serie]
-            data_10 <- data_percent_month[, i_order] # Datos en orden de las otras series
+            data_10 <- data_percent_month[, i_order] # Data in order of the other series
             data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = n_reference_stations))
             data_refe <- apply(data_refe_10, c(1), base::mean, na.rm = TRUE)
             data_correct[rownames(data_percent_month)[!is.na(data_ori) & data_ori != 0 & !is.na(data_percent_month[, i_serie]) & !is.na(data_refe) & (abs(data_percent_month[, i_serie] - data_refe) > max_diff_anomaly)], i_serie] <- NA
@@ -426,11 +426,11 @@ quality_control <- function(data, coor, max_dist, max_diff_anomaly, max_diff_ano
   return(list(data = data_correct, coor = coor))
 }
 
-#' Calcula el tiempo de solape existente entre cada par de series
+#' Calculates the overlap time between each pair of series
 #'
-#' @param control_data datos de las estaciones y sus coordenadas
+#' @param control_datadata from the stations and their coordinates
 #'
-#' @return matriz con los meses que se solapan las estaciones entre si
+#' @return matrix with the months where the stations overlap with each other
 #' @export
 #'
 overlap_station <- function(control_data){
@@ -450,11 +450,11 @@ overlap_station <- function(control_data){
   return(overlap)
 }
 
-#' Calcula el tiempo de solape existente entre cada par de series sin contar 0s
+#' Calculates the overlap time between each pair of series without counting zeros
 #'
-#' @param control_data datos de las estaciones y sus coordenadas
+#' @param control_data data from the stations and their coordinates
 #'
-#' @return matriz con los meses que se solapan las estaciones entre si
+#' @return matrix with the months where the stations overlap with each other
 #' @export
 #'
 overlap_station_no_0 <- function(control_data){
@@ -477,11 +477,13 @@ overlap_station_no_0 <- function(control_data){
   return(overlap)
 }
 
-#' En los países que no salgan series, vamos a permitir que hasta tres años de datos se rellenen con la media. Es decir, pongamos que si para un periodo concreto 1900-2020 no salen series pero saldrían porque hay un máximo de tres años de datos (es decir 36 meses), rellenamos esos datos con el promedio de los 15 datos más cercanos en el tiempo. Por ejemplo, si es 1900, pues con la media de 1900-1915, si es 1915, pues con la media de 1907 a 1922. Siempre y cuando esos cinco años no estén entre 2015 y 2020 o en los cinco primeros años de las series, que entonces tiramos la serie pues podría afectar a las tendencias.
-#' Si las series son las de 1981-2020, lo mismo, pero dejamos solamente dos años de datos perdidos.
+#' In countries where no series are found, we allow up to three years of data to be filled with the average. For example, if for a specific period 1900-2020 no series appear, but there are a maximum of three years of data (i.e., 36 months), we fill these data with the average of the 15 closest data points in time.
+#' This applies as long as these five years are not between 2015 and 2020 or within the first five years of the series, as this could affect trends. 
+#' If the series are from 1981-2020, the same rule applies, but only two years of lost data are allowed.
 #'
-#' @param data datos de las estaciones que se intentarán rellenar
-#' @param fillable_years años rellenables con la media mensual de la propia estación
+#'
+#' @param data station data to be filled
+#' @param fillable_years years that can be filled with the station's monthly average
 #'
 #' @return None
 #' @export
@@ -499,7 +501,7 @@ fill_unfillable_station  <- function(data, fillable_years){
       idata_na <- data_na[1]
       for(idata_na in data_na){
         idata_no_na <- data_no_na[idata_na %% 12 == data_no_na %% 12]
-        # rellenamos con la media de los 10 datos más cercanos
+        # Fills with the average of the 10 closest data points
         idata_select_no_na <- idata_no_na[order(abs(idata_no_na - idata_na))][1:10]
 
         fillable_data[idata_na, station] <- base::mean(data_padding[idata_select_no_na])
@@ -510,16 +512,16 @@ fill_unfillable_station  <- function(data, fillable_years){
   return(data)
 }
 
-#' Rellenado mensual de las series
-#' Usamos estaciones a menos de 200km con correlación por encima de 0.7
-#' Para junio, julio y agosto, rellenamos con la más cercana
-#' Utilizar el método que mejor correlaciona con la serie original
+#' Monthly series filling
+#' We use stations less than 200km away with correlations above 0.7.
+#' For June, July, and August, we fill with the closest station.
+#' Use the method that correlates best with the original series.
 #'
-#' @param control_data datos de las estaciones y sus coordenadas
-#' @param min_correlation Correlación mínima para usar el dato en el relleno
-#' @param max_dist distancia máxima entre las series a utilizar
+#' @param control_data data from the stations and their coordinates
+#' @param min_correlation minimum correlation to use the data in filling
+#' @param max_dist maximum distance between series to use
 #'
-#' @return data y coor con los datos que no pasan el control eliminados
+#' @return data and coordinates with data that did not pass the control removed
 #' @export
 #'
 fill_series <- function(control_data, min_correlation, max_dist){
@@ -531,15 +533,15 @@ fill_series <- function(control_data, min_correlation, max_dist){
   if(dim(control_data$data)[2] > 1){
     all_series <- colnames(control_data$data)
 
-    ## Rellenamos con estaciones a menos de 200km con correlación por encima de 0.7
-    # Las series a utilizar se tienen que solapar 10 años
+    ## Fill with stations less than 200km away with a correlation above 0.7
+    # The series used must overlap for 10 years
     overlap <- overlap_station(control_data)
     overlap_no_0 <- overlap_station_no_0(control_data)
 
-    ##  Para algunos casos rellenamos con la más cercana
+    ## In some cases, we fill with the closest station
     data_near <- near_estations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
 
-    # Rellenamos los meses que no son de verano
+    # Fill in the months that are not summer
     data_cor_list <- near_correlations(data = control_data$data, coor = control_data$coor, max_dist = max_dist)
     months <- names(data_cor_list)
     i_month <- months[1]
@@ -554,24 +556,24 @@ fill_series <- function(control_data, min_correlation, max_dist){
       overlap_month <- overlap_station(control_data = list(data = data_month, coor = control_data$coor))
       overlap_no_0_month <- overlap_station_no_0(control_data = list(data = data_month, coor = control_data$coor))
 
-      # No rellenamos con datos que no cumplan la correlación mínima
+      # Do not fill with data that do not meet the minimum correlation
       data_cor[data_cor < min_correlation] <- NA
 
-      # No rellenamos con datos de estaciones sin un solapamiento mínimo para todo el periodo
+      # Do not fill with data from stations without a minimum overlap for the entire period
       data_cor[overlap < min_overlap * 12] <- NA
       data_cor[overlap_no_0 < min_overlap * 12] <- NA
 
-      # No rellenamos con datos de estaciones sin un solapamiento mínimo para el mes actual
+      # Do not fill with data from stations without a minimum overlap for the current month
       data_cor[overlap_month < min_overlap] <- NA
       data_cor[overlap_no_0_month < min_overlap] <- NA
 
-      #Ordenar según correlaciones
+      # Sort by correlations
       if(length(data_near) > 0){
         i_series <- all_series[1]
         for(i_series in all_series){
-          i_order <- all_series[data_near[[i_series]]] #Estaciones ordenadas según su cercanía a la estación
+          i_order <- all_series[data_near[[i_series]]] # Stations sorted by their proximity to the station
           data_cor_series <- colnames(data_cor)[!is.na(data_cor[, i_series])]
-          select_series <- i_order[i_order %in% data_cor_series] #Eliminamos estaciones que no cumplen alguna restricción
+          select_series <- i_order[i_order %in% data_cor_series] # Remove stations that do not meet certain criteria
           other_series <- data_month[, select_series, drop = FALSE]
 
           if(dim(other_series)[2] != 0){
@@ -582,13 +584,13 @@ fill_series <- function(control_data, min_correlation, max_dist){
 
           zeros_left <- sum(is.na(data_month[, i_series])) > 0 && sum(data_month[, i_series] == 0, na.rm = TRUE)/sum(!is.na(data_month[, i_series]), na.rm = TRUE) > 0.5
           if(dim(other_series)[2] == 0 || zeros_left){
-            i_order <- all_series[data_near[[i_series]]] #Orden de distancia con las otras series
+            i_order <- all_series[data_near[[i_series]]] # Sort by distance to the other series
             
             if(length(i_order) > 1){
-              data_10 <- control_data$data[, i_order] # Datos en orden de las otras series
+              data_10 <- control_data$data[, i_order] # Data in the order of the other series
               data_refe_10 <- t(apply(data_10, c(1), select_data, n_reference_stations = 1))
 
-              # Cuando se sustituye por la más cercana, considerar la ratio entre la estación candidata y la que utilizamos para sustituir
+              # When replacing with the closest station, consider the ratio between the candidate station and the one used for replacement
               mean_10 <- mean(return_control_data$data[, i_series][!is.na(return_control_data$data[, i_series]) & !is.na(data_refe_10)])
               mean_refe_10 <- mean(data_refe_10[!is.na(return_control_data$data[, i_series]) & !is.na(data_refe_10)])
 
@@ -603,26 +605,26 @@ fill_series <- function(control_data, min_correlation, max_dist){
   return(return_control_data)
 }
 
-#' Rellena la serie recibida utilizando las otras en el orden en el que están en other_series
+#' Fills the received series using others in the order they appear in other_series
 #'
-#' @param series serie de datos a completar 
-#' @param other_series series de datos con las que completar en el orden en el que se tienen que utilizar 
+#' @param series data series to complete
+#' @param other_series data series to use for completing in the order they must be used
 #'
-#' @return serie de datosd rellena
+#' @return filled data series
 #' @export
 #'
 fill_one_series <- function(series, other_series){
 
   return_series <- series
 
-  # Por cercaniá, solo miramos correlación para eliminar, 5 años comunes
+  # Based on proximity, only correlation is reviewed for elimination, with 5 common years.
 
   i_other_series = 1
   while(sum(is.na(return_series)) > 0 & i_other_series <= dim(other_series)[2]){
 
     use_series <- other_series[, i_other_series]
 
-    # Datos NA que son 0 en la serie de relleno se ponen directamente a 0
+    # NA data that are 0 in the filling series are directly set to 0.
     return_series[is.na(return_series) & !is.na(use_series) & use_series == 0] = 0
 
     use_series_no_0 <- use_series[(is.na(use_series) | use_series != 0) & (is.na(series) | series != 0)]
@@ -631,10 +633,10 @@ fill_one_series <- function(series, other_series){
     use_series_comoon = use_series_no_0[!is.na(series_no_0) & !is.na(use_series_no_0)]
     series_comoon = series_no_0[!is.na(series_no_0) & !is.na(use_series_no_0)]
 
-    # Calculamos sobre los datos en común de la serie a usar para rellenar
+    #Calculate based on the common data of the series used for filling.
     l_mom <- suppressWarnings(lmom::samlmu(use_series_comoon, nmom = 4, sort.data = TRUE, ratios = TRUE, trim = 0))
 
-    # Seleccionamos la mejor de las 10 funciones
+    # Select the best of the 10 functions.
     p.value = array(NA, dim = length(pel_functions), dimnames = list(names(pel_functions)))
     best_funcion = names(pel_functions)[3]
     for(best_funcion in names(pel_functions)){
@@ -651,10 +653,10 @@ fill_one_series <- function(series, other_series){
     if(sum(!is.na(p.value)) > 0){
       best_funcion <- names(pel_functions)[which(p.value == max(p.value, na.rm = TRUE))[1]]
 
-      # Utilizamos la mejor de las 10 funciones
+      # Use the best of the 10 functions.
       par_exp <- pel_functions[[best_funcion]](l_mom)
 
-      # Calculamos sobre todos los datos de la serie a usar para rellenar
+      # Calculate using all the data from the series used for filling.
       cdf_exp <- cdf_functions[[best_funcion]](use_series_no_0, para = par_exp)
 
       generate_series <- suppressWarnings(as.vector(stats::quantile(series_no_0, cdf_exp, na.rm = TRUE)))
@@ -667,19 +669,19 @@ fill_one_series <- function(series, other_series){
   return(return_series)
 }
 
-#' Guarda la salida en 5 fichero con los datos
-#'  5 ficheros que indican si cada datos es original o rellenado (1 dato no alterado, 0 dato alterado)
-#'  y 5 ficheros de coordenadas para las estaciones de cada fichero de datos, que son:
-#' - 1870 a 2020 con más de 80 años originales
-#' - 1900 a 2020 con más de 80 años originales
-#' - 1930 a 2020 con más de 60 años originales
-#' - 1950 a 2020 con más de 40 años originales
-#' - 1990 a 2020 con más de 30 años originales
+#' Saves the output in 5 files with the data
+#'  5 files indicating whether each data point is original or filled (1 for unaltered data, 0 for altered data)
+#'  and 5 coordinate files for the stations in each data file, which are:
+#' - 1870 to 2020 with more than 0.75 of years of original data
+#' - 1900 to 2020 with more than 0.75 of years of original data
+#' - 1930 to 2020 with more than 0.75 of years of original data
+#' - 1950 to 2020 with more than 0.75 of years of original data
+#' - 1990 to 2020 with more than 0.75 of years of original data
 #'
-#' @param data_ori datos originales leidos de los ficheros CSV
-#' @param control_data datos de las estaciones y sus coordenadas
+#' @param data_ori original data read from CSV files
+#' @param control_data data from the stations and their coordinates
 #'
-#' @return data y coor con los datos que no pasan el control eliminados
+#' @return data and coordinates with data that did not pass the control removed
 #' @export
 #'
 save_data <- function(data_ori, control_data){
@@ -710,12 +712,12 @@ save_data <- function(data_ori, control_data){
   return(data_return)
 }
 
-#' Guardamos los datos en CSVs
+#' Saves the data into CSVs
 #'
-#' @param i_ini identificador de los ficheros
-#' @param folder_name carpeta en la que guardar el fichero
-#' @param data_save datos de las estaciones a guardar
-#' @param coor_save datos de coordenadas a guardar
+#' @param i_ini identifier for the files
+#' @param folder_name folder where the file will be saved
+#' @param data_save data from the stations to save
+#' @param coor_save coordinates data to save
 #'
 #' @return None
 #' @export
@@ -738,24 +740,24 @@ save_csvs <- function(i_ini, folder_name, data_save, coor_save){
   }
 }
 
-#' Leemos los datos desde los CSVs con el formato acordado
-#' Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)
+#' Reads data from CSVs in the agreed format
+#' The input files are 2 CSVs: one with coordinates in degrees (stations in rows and columns lat and lon) and another with monthly data (dates in rows and stations in columns)
 #'
-#' @param file_data ruta del fichero de datos
-#' @param file_coor ruta del fichero de coordenadas
+#' @param file_data path to the data file
+#' @param file_coor path to the coordinates file
 #'
-#' @return datos originales, datos de interes y coordenadas de las estaciones leidas
+#' @return original data, data of interest, and coordinates of the stations read
 #' @export
 #'
 read_data <- function(file_data, file_coor){
-  # Leer los datos
+  # Read the data
   if(file.exists(file_data) & file.exists(file_coor)){
     data_ori <- utils::read.table(file_data, sep = ";", header = TRUE)
     coor <- utils::read.table(file_coor, sep = ";", header = TRUE)
     rownames(coor) <- coor[, "coor"]
     coor[, "coor"] <- NULL
 
-    # Las fechas identifican las filas
+    # The dates identify the rows
     rownames(data_ori) <- as.character(chron::chron(paste0("01", "/", data_ori[, "month"], "/", data_ori[, "year"]), format = c(dates = "d/m/y", times = "h:m:s"), out.format = time_format))
     data_ori["month"] <- NULL
     data_ori["year"] <- NULL
@@ -765,21 +767,21 @@ read_data <- function(file_data, file_coor){
     data_ori[, 1:length(data_ori)] <- sapply(data_ori[, 1:length(data_ori)], as.numeric)
     coor[, 1:length(coor)] <- sapply(coor[, 1:length(coor)], as.numeric)
 
-    # Revisión de fechas
+    # Review the dates
     dates <- seq(chron::chron(rownames(data_ori)[1], format = time_format, out.format = time_format), chron::chron(rownames(data_ori)[dim(data_ori)[1]], format = time_format, out.format = time_format), by = "month")
     data <- data_ori[as.character(dates), , drop = FALSE]
 
-    # Revisión de que tenemos las coordenadas
+    # Check that it has the coordinates
     no_coor <- which(!colnames(data) %in% rownames(coor))
     if(length(no_coor) > 0){
       warning(paste("We eliminate the stations", paste(colnames(data)[no_coor], sep = " ", collapse = " "), "because the coordinates are not available.", sep = " ", collapse = " "))
       data <- data[, colnames(data) %in% rownames(coor)]
     }
 
-    # Seleccionamos coordenadas solo de las estaciones con datos
+    # Select coordinates only for stations with data
     coor <- coor[colnames(data), ]
 
-    # Eliminamos datos de fechas que no nos interesan
+    # Remove data for dates that are not of interest
     start_date <- "01/01/1870"
     if(sum(dates == chron::chron(start_date)) > 0){
       dates <- dates[which(dates == chron::chron(start_date)):length(dates)]
@@ -820,9 +822,9 @@ snht <- function(x, clevel)
   return(list(Tc = Tc, T0 = T0, T0x = T0x))
 }
 
-#' Devuelve el pval calculado por mkTrend o el pval0 si el pval era NA
+#' Returns the p-value calculated by mkTrend or pval0 if pval was NA
 #'
-#' @param data matriz de datos
+#' @param data data matrix
 #'
 #' @return pval
 #' @export
@@ -840,11 +842,11 @@ calc_mkTrend_pval <- function(data) {
   return(mkTrend_pval)
 }
 
-#' Suma los datos de cada año, para devolver un solo dato anual
+#' Sums the data for each year to return a single annual value
 #'
-#' @param data matriz de datos
+#' @param data data matrix
 #'
-#' @return un dato por año
+#' @return one value per year
 #' @export
 #'
 calc_data_year <- function(data) {
@@ -856,18 +858,18 @@ calc_data_year <- function(data) {
   return(as.matrix(data_year))
 }
 
-#' Devuelve el slope z por años y estaciones
+#' Returns the slope z for years and stations
 #'
-#' @param data datos de las estaciones
-#' @param calc_function función a utilizar
+#' @param data station data
+#' @param calc_function function to use
 #'
-#' @return lista de resultados
+#' @return list of results
 #' @export
 #'
 calc_data_year_month_station <- function(data, calc_function) {
   months <- substr(rownames(data), 4, 6)
 
-  # Tendencia mensual, estacional y anual,función calc_function
+  # Monthly, seasonal, and annual trend, using the calc_function
   sens_slope <- list()
   sens_slope[["year"]] <- apply(calc_data_year(data), c(2), calc_function)
   sens_slope[["summer"]] <- apply(calc_data_year(data[months %in% c("Jun", "Jul", "Aug"), , drop = FALSE]), c(2), calc_function)
@@ -888,7 +890,7 @@ calc_data_year_month_station <- function(data, calc_function) {
   return(sens_slope)
 }
 
-#' Calcula pval (a veces no da resultado por temas de iteración) entonces coger pval0.
+#' Calculates p-value (sometimes it doesn't result due to iteration issues, so take pval0).
 #'
 #' @param x x
 #' @param ci ci
@@ -897,7 +899,7 @@ calc_data_year_month_station <- function(data, calc_function) {
 #' @export
 #'
 mkTrend <- function(x, ci = .95) {
-  x <- x + 1 # Añadido para evitar algunos problemas con los 0s
+  x <- x + 1 # Added to avoid some issues with zeros.
 
   z <- NULL
   z0 <- NULL
@@ -969,7 +971,7 @@ mkTrend <- function(x, ci = .95) {
   return(p_values)
 }
 
-#' regresión lineal de los datos contra los años
+#' Linear regression of the data against years.
 #'
 #' @param data index
 #'
@@ -986,9 +988,9 @@ calc_mkTrend_slp <- function(data){
   return(mkTrend_slp)
 }
 
-#############################Funciones de Sergio
+#############################Functions developed by Sergio
 
-#' esta función calcula la tendencia. Hay que definirle un objeto de años (years) con el año correspondiente a cada caso.
+#' Calculates the trend. A 'years' object must be defined with the corresponding year for each case.
 #'
 #' @param index index
 #' @param threshold threshold
@@ -1078,7 +1080,7 @@ dry_spell_trend <- function(index, threshold) {
   return(output)
 }
 
-#' esto te calcula unas tendencias móviles de una serie, en este caso que empieza en 1851 y termina en 2018,. Habría que hacerlo para cada base de datos y estación.
+#' Calculates the moving trends of a series.
 #'
 #' @param datos datos
 #'
@@ -1123,11 +1125,11 @@ mobile_trends <- function(datos) {
 }
 
 
-#' Coeficientes de variación, desviación estándar
+#' Coefficients of variation, standard deviation
 #' https://fhernanb.github.io/Manual-de-R/varia.html
 #'
-#' @param x datos
-#' @param na.rm Ignorara NAs
+#' @param x data
+#' @param na.rm Ignore NAs
 #'
 #' @return percentage
 #' @export
@@ -1136,10 +1138,10 @@ coef_var <- function(x, na.rm = FALSE) {
   stats::sd(x, na.rm = na.rm) / base::mean(x, na.rm = na.rm)
 }
 
-#' Diferencia en porcentaje
+#' Percentage difference
 #'
-#' @param datos datos
-#' @param years años
+#' @param datos data
+#' @param years years
 #'
 #' @return percentage
 #' @export
@@ -1158,9 +1160,9 @@ calc_percentage <- function(datos, years = NA) {
   return(percentage)
 }
 
-#' Devuelve el procentage de datos válidos que son 0s
+#' Returns the percentage of valid data that are zeros
 #'
-#' @param data datos
+#' @param data data
 #'
 #' @return percentage
 #' @export
@@ -1169,18 +1171,18 @@ percentage_of_zeros <- function(data) {
   return(100 * sum(data == 0, na.rm = TRUE) / sum(!is.na(data), na.rm = TRUE))
 }
 
-#' Elimina datos si tenemos 8 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70 por ciento de ceros se elimina su dato. Elimina también datos si tenemos 5 meses o más seguidos de 0s, si todos los meses implicados tiene menos del 70 por ciento de ceros se eliminan todos.
+#' Removes data if there are 8 or more consecutive months of zeros, and if one of the involved months has less than 70% zeros, its data is removed. Also removes data if there are 5 or more consecutive months of zeros, and if all the involved months have less than 70% zeros, all are removed.
+#' 
+#' @param data data
 #'
-#' @param data datos
-#'
-#' @return datos con los grupos de 0s eliminados
+#' @return data with zero groups removed
 #' @export
 #'
 delete_zero <- function(data) {
 
   dates <- chron::chron(rownames(data), format = time_format, out.format = time_format)
 
-  # Porcentaje de 0s para cada mes y estación
+  # Percentage of zeros for each month and station
   months_percentage <- array(NA, dim = c(dim(data)[2], 12))
   rownames(months_percentage) = colnames(data)
 
@@ -1199,7 +1201,7 @@ delete_zero <- function(data) {
     station_rle <- rle(data_zero[, station])
     position <- cumsum(station_rle$lengths)
 
-    # Elimina datos si tenemos 8 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70 por ciento de ceros se elimina su dato.
+    # Removes data if there are 8 or more consecutive months of zeros, and if one of the involved months has less than 70% zeros, its data is removed.
     zero_groups <- which(!is.na(station_rle$values) & station_rle$values == 0 & station_rle$lengths >= 8)
     zero_group <- zero_groups[1]
     for(zero_group in zero_groups){
@@ -1207,7 +1209,7 @@ delete_zero <- function(data) {
         data_zero[range[months_percentage[station, as.numeric(base::months(dates[range]))] < 70], station] <- NA
     }
 
-    # Elimina datos si tenemos 5 meses o más seguidos de 0s, si todos los meses implicados tiene menos del 70 por ciento de ceros se eliminan todos.
+    # Removes data if there are 5 or more consecutive months of zeros, and if all the involved months have less than 70% zeros, all are removed.
     zero_groups <- which(!is.na(station_rle$values) & station_rle$values == 0 & station_rle$lengths >= 5 & station_rle$lengths < 8)
     zero_group <- zero_groups[1]
     for(zero_group in zero_groups){
@@ -1222,13 +1224,13 @@ delete_zero <- function(data) {
   return(data_zero)
 }
 
-#'Para cada estación guardar, número de datos de entrada y de datos eliminados
+#' For each station, save the number of input data and deleted data
 #'
-#' @param ori_data datos iniciales
-#' @param process_data datos procesados
-#' @param folder carpeta en la que se guarda el fichero resultante
+#' @param ori_data original data
+#' @param process_data processed data
+#' @param folder folder where the resulting file is saved
 #'
-#' @return datos eliminados y datos de entrada por estación
+#' @return deleted data and input data per station
 #' @export
 #'
 save_delete_data <- function(ori_data, process_data, folder) {
@@ -1254,14 +1256,14 @@ save_delete_data <- function(ori_data, process_data, folder) {
   return(data_save)
 }
 
-#'Calcular estadísticos de la reconstrucción
-#' - hydroGOF -- estadísitico por estación
-#' - D / MAE / PBIAS / RMSE  - por estación y mes
+#' Calculate reconstruction statistics
+#' - hydroGOF -- statistic per station
+#' - D / MAE / PBIAS / RMSE  - per station and month
 #'
-#' @param sim datos rellenados
-#' @param obs datos iniciales
+#' @param sim filled data
+#' @param obs original data
 #'
-#' @return datos eliminados y datos de entrada por estación
+#' @return deleted data and input data per station
 #' @export
 #'
 calculate_reconstruction_statistics <- function(sim, obs) {

@@ -25,14 +25,14 @@ context("MediterraneanCalculations")
 
 ##################################################
 
-max_dist_test <- 200 # Máxima distancia entre 2 estaciones para usar una para evaluar o completar la otra
+max_dist_test <- 200 # Maximum distance between two stations to use one to evaluate or complete the other
 
-#' genera un data asociado a un coor que sirve en varios tests
+#' Generates a data associated with a coordinate that is used in several tests
 #'
-#' @param i_year año de comienzo de los datos
-#' @param ndata número de estaciones
+#' @param i_year starting year of the data
+#' @param ndata number of stations
 #'
-#' @return list de data y coor
+#' @return list of data and coordinates
 #' @export
 #'
 generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
@@ -42,7 +42,7 @@ generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
   rownames(data) <- times
   data[12, 1] <- NA
   data[18, 1] <- NA
-  data[19, 1] <- 3 # Dato a eliminar por el control
+  data[19, 1] <- 3 # Data to be removed by control
   data[20, 1] <- 2 
   
 
@@ -55,7 +55,7 @@ generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
   coor[1, ] <- c(1, 1)
   if(ndata > 1){
     # data[, 2] <- NA
-    data[1:(8*12), 2] <- rep(2, 8*12) # Serie a eliminar por pocos datos
+    data[1:(8*12), 2] <- rep(2, 8*12) # Series to be removed due to insufficient data
     coor[2, ] <- c(1, 1.1)
   }
 
@@ -65,7 +65,7 @@ generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
   }
 
   if(ndata > 3){
-    data[20, 3] <- 130 # Dato a eliminar por el control
+    data[20, 3] <- 130 # Data to be removed by control
     data[20, 4] <- 130
     data[20, 5] <- 130
     
@@ -73,7 +73,7 @@ generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
     coor[5, ] <- c(1, 0.9)
   }
 
-  # Estación solitaria
+  # Solitary station
   if(ndata > 5){
     data[, 6] <- data[, 5]
     coor[6, ] <- c(1.2, 1.2)
@@ -92,7 +92,7 @@ generate_mock_data_coor <- function(i_year = 2001, ndata = 5){
 
 # ############################################################
 
-#' testea la función read_years
+#' tests the function read_years
 #'
 #' @return None
 #' @export
@@ -103,7 +103,7 @@ test_that("read_years", {
   expect_equivalent(data[123], 2011, info = "read_years", quiet = TRUE) 
 })
 
-#' testea la función order_data
+#' tests the function order_data
 #'
 #' @return None
 #' @export
@@ -114,7 +114,7 @@ test_that("order_data", {
   expect_equivalent(c(20, 1), data_result$X5[c(1:2)], info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
-#' testea la función sum_no_nas
+#' tests the function sum_no_nas
 #'
 #' @return None
 #' @export
@@ -126,7 +126,7 @@ test_that("sum_no_nas", {
   expect_equivalent(200, data_result, info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
-#' testea la función select_data
+#' tests the function select_data
 #'
 #' @return None
 #' @export
@@ -137,7 +137,7 @@ test_that("select_data", {
   expect_equivalent(c(1:5), data_result, info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
-#' testea la función apply_ecdf_month
+#' tests the function apply_ecdf_month
 #'
 #' @return None
 #' @export
@@ -149,7 +149,7 @@ test_that("apply_ecdf_month", {
   expect_equivalent(data_result[2, "X4"] < data_result[3, "X4"], TRUE)
 })
 
-#' testea la función apply_ecdf
+#' tests the function apply_ecdf
 #'
 #' @return None
 #' @export
@@ -161,7 +161,7 @@ test_that("apply_ecdf", {
   expect_equivalent(data_result[13, "X4"] < data_result[14, "X4"], TRUE)
 })
 
-#' testea la función near_correlations
+#' tests the function near_correlations
 #'
 #' @return None
 #' @export
@@ -179,7 +179,7 @@ test_that("near_correlations", {
   expect_equivalent(-1, data_result$Aug[1, 3], info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
-#' testea la función near_estations
+#' tests the function near_estations
 #'
 #' @return None
 #' @export
@@ -201,15 +201,15 @@ test_that("near_estations", {
   expect_equivalent(c(2, 3, 4, 5), data_result$X1, info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
-#' testea la función quality_control
+#' tests the function quality_control
 #'
 #' @return None
 #' @export
 #'
 test_that("quality_control", {
 
-  max_diff_anomaly <- 0.6 # Máxima diferencia de anomalías para mantener dato en el control
-  max_diff_anomaly_0 <- 0.5 # Máxima diferencia de anomalías para mantener dato en el control, si el dato es 0
+  max_diff_anomaly <- 0.6 # Maximum difference in anomalies to keep data in control
+  max_diff_anomaly_0 <- 0.5 # Maximum difference in anomalies to keep data in control if the data is 0
 
   control_data <- generate_mock_data_coor(ndata = 6)
   control_data$data[, 2] <- NA
@@ -244,7 +244,7 @@ test_that("quality_control", {
   control_data$data[dim(control_data$data)[1], "X2"] <- 1
   result <- quality_control(data = control_data$data, coor = control_data$coor, max_dist = max_dist_test, max_diff_anomaly = max_diff_anomaly, max_diff_anomaly_0 = max_diff_anomaly_0)
 
-  # Estación solitaria
+  # Solitary station
   control_data$data[12, "X5"] <- NA
   control_data$coor["X5", ] <- c(45, 90)
   result <- quality_control(data = control_data$data, coor = control_data$coor, max_dist = max_dist_test, max_diff_anomaly = max_diff_anomaly, max_diff_anomaly_0 = max_diff_anomaly_0)
@@ -252,7 +252,7 @@ test_that("quality_control", {
   expect_equivalent(result$data[, "X5"], control_data$data[, "X5"], info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
-#' testea la función overlap_station
+#' tests the function overlap_station
 #'
 #' @return None
 #' @export
@@ -272,7 +272,7 @@ test_that("overlap_station", {
   expect_equivalent(data_result, data_ok, info = deparse(sys.calls()[[sys.nframe()]]))
 })
 
-#' testea la función fill_unfillable_station
+#' tests the function fill_unfillable_station
 #'
 #' @return None
 #' @export
@@ -296,7 +296,7 @@ test_that("fill_unfillable_station", {
   expect_equivalent(sum(is.na(data$data[, 5])), 0) 
 })
 
-#' testea la función fill_series
+#' tests the function fill_series
 #'
 #' @return None
 #' @export
@@ -316,7 +316,7 @@ test_that("fill_series", {
   expect_equivalent(sum(is.na(data_result$data)), 0, info = info)
 })
 
-#' testea la función fill_one_series
+#' tests the function fill_one_series
 #'
 #' @return None
 #' @export
@@ -336,7 +336,7 @@ test_that("fill_one_series", {
 })
 
 
-#' testea la función save_data
+#' tests the function save_data
 #'
 #' @return None
 #' @export
@@ -359,7 +359,7 @@ test_that("save_data", {
   expect_equivalent(dim(data[["start_1931"]]$data)[2], 1)
 })
 
-#' testea la función save_csvs and read_data
+#' tests the functions save_csvs and read_data
 #'
 #' @return None
 #' @export
@@ -376,7 +376,7 @@ test_that("save_csvs_read_data", {
   expect_equivalent(as.data.frame(control_data$coor), data$coor)
 })
 
-#' testea la función snht
+#' tests the function snht
 #'
 #' @return None
 #' @export
@@ -384,10 +384,10 @@ test_that("save_csvs_read_data", {
 test_that("snht", {
   file_data <- generate_mock_data_coor()
   data <- snht(x = file_data$data, clevel = 95)$T0x
-  expect_equivalent(data, 96) # Función de Sergio, comprobamos que mantiene resultado
+  expect_equivalent(data, 96) # Verify that it maintains the resul
 })
 
-#' testea la función calc_mkTrend_pval
+#' tests the function calc_mkTrend_pval
 #'
 #' @return None
 #' @export
@@ -396,7 +396,7 @@ test_that("calc_mkTrend_pval", {
   file_data <- generate_mock_data_coor()
   ok_data <- calc_data_year(data = file_data$data)
   data <- calc_mkTrend_pval(data = ok_data[, 2])
-  expect_equivalent(round(data, 5), 0.00614) # 0.01054 ¿? Función de Sergio, comprobamos que mantiene resultado
+  expect_equivalent(round(data, 5), 0.00614) # Verify that it maintains the resul
 
   file_data_one <- generate_mock_data_coor(i_year = 1981, ndata = 3) 
   ok_data <- calc_data_year(data = file_data$data)
@@ -412,7 +412,7 @@ test_that("calc_mkTrend_pval", {
   expect_equivalent(round(data, 3), c(1))
 })
 
-#' testea la función calc_data_year
+#' tests the function calc_data_year
 #'
 #' @return None
 #' @export
@@ -423,7 +423,7 @@ test_that("calc_data_year", {
   expect_equivalent(data["year_2001", "X3"], sum(file_data$data[grepl("2001", rownames(file_data$data)), "X3"])) 
 })
 
-#' testea la función calc_data_year_month_station
+#' tests the function calc_data_year_month_station
 #'
 #' @return None
 #' @export
@@ -440,7 +440,7 @@ test_that("calc_data_year_month_station", {
   expect_equivalent(names(which(is.na(data))), c("year.X1", "summer.X1", "winter.X1"))
 })
 
-#' testea la función mkTrend
+#' tests the function mkTrend
 #'
 #' @return None
 #' @export
@@ -448,7 +448,7 @@ test_that("calc_data_year_month_station", {
 test_that("mkTrend", {
   # Función original mkTrend
   mkTrend_ori <- function(x, ci = .95) {
-    x <- x + 1 # Añadido para evitar algunos problemas con los 0s
+    x <- x + 1 # Added to avoid some issues with zeros.
 
     z <- NULL
     z0 <- NULL
@@ -528,11 +528,11 @@ test_that("mkTrend", {
   data_pval <- calc_mkTrend_pval(data = file_data$data[, 3])
   data_ori <- mkTrend_ori(x = file_data$data[, 3])
   expect_equivalent(round(mean(as.numeric(as.matrix(data)), na.rm = TRUE), 3), 0.502)
-  expect_equivalent(round(mean(as.numeric(as.matrix(data)), na.rm = TRUE), 5), round(mean(c(data_ori$p.value, data_ori$`Corrected p.value`), na.rm = TRUE), 5))  # Función de Sergio, comprobamos que mantiene resultado de su versión original
+  expect_equivalent(round(mean(as.numeric(as.matrix(data)), na.rm = TRUE), 5), round(mean(c(data_ori$p.value, data_ori$`Corrected p.value`), na.rm = TRUE), 5))  # Check that it maintains the result.
   expect_equivalent(round(data["corrected_p_value"], 5), round(data_pval, 5))
 })
 
-#' testea la función calc_mkTrend_slp
+#'tests the function calc_mkTrend_slp
 #'
 #' @return None
 #' @export
@@ -541,9 +541,8 @@ test_that("calc_mkTrend_slp", {
   file_data <- generate_mock_data_coor()
   ok_data <- calc_data_year(data = file_data$data)
   data <- calc_mkTrend_slp(data = ok_data[, 2])
-  expect_equivalent(round(data, 3), 647.825) # 0 ¿? Función de Sergio, comprobamos que mantiene resultado
+  expect_equivalent(round(data, 3), 647.825) # Check that it maintains the result.
 
-  # Prueba pedida por Sergio
   file_data <- generate_mock_data_coor()
 
   file_data$data[, 1] <- c(1:dim(file_data$data)[1])
@@ -582,7 +581,7 @@ test_that("calc_mkTrend_slp", {
   expect_equivalent(round(data, 3), c(0)) 
 })
 
-#' testea la función dry_spell_trend
+#' tests the function dry_spell_trend
 #'
 #' @return None
 #' @export
@@ -593,11 +592,11 @@ test_that("dry_spell_trend", {
   set.seed(42)
   file_data$data[, 3] <- sample(c(dim(file_data$data)[1]:1))/400 - 2
   data <- dry_spell_trend(index = file_data$data[, 3], threshold = 0)
-  # expect_equivalent(round(data, 3), c(0.265, 0.137, 0, 0)) # Función de Sergio, comprobamos que mantiene resultado
-  expect_equivalent(round(data, 2), c(0.34, 0.28, 0.03, 0.45)) # Función de Sergio, comprobamos que mantiene resultado
+  # expect_equivalent(round(data, 3), c(0.265, 0.137, 0, 0)) # Check that it maintains the result.
+  expect_equivalent(round(data, 2), c(0.34, 0.28, 0.03, 0.45)) # Check that it maintains the result.
 })
 
-#' testea la función mobile_trends
+#' tests the function mobile_trends
 #'
 #' @return None
 #' @export
@@ -608,9 +607,9 @@ test_that("mobile_trends", {
   # system.time(mobile_trends(datos = file_data$data[, 3])) # 8.879   0.004   8.893
   data <- mobile_trends(datos = file_data$data[seq(1, dim(file_data$data)[1], by = 12), 3])
   expect_equivalent(dim(data$matriz_s)[1], 42) # Antes era 43
-  expect_equivalent(round(mean(data$matriz_p, na.rm = TRUE), 5), 1) # Función de Sergio, comprobamos que mantiene resultado
+  expect_equivalent(round(mean(data$matriz_p, na.rm = TRUE), 5), 1) # Check that it maintains the result.
 
-  file_data <- generate_mock_data_coor(i_year = 1981, ndata = 3) # Secalcula para c(1871, 1901, 1931) 
+  file_data <- generate_mock_data_coor(i_year = 1981, ndata = 3) # It is calculated for c(1871, 1901, 1931).
   ok_data <- calc_data_year(data = file_data$data)
   ok_data[, "X1"] <- 1:length(ok_data[, "X1"])
   ok_data[, "X2"] <- length(ok_data[, "X2"]):1
@@ -623,7 +622,7 @@ test_that("mobile_trends", {
   expect_equivalent(round(data3$matriz_p[1, 1], 3), 1)
 })
 
-#' testea la función calc_percentage
+#' tests the function calc_percentage
 #'
 #' @return None
 #' @export
@@ -632,7 +631,7 @@ test_that("calc_percentage", {
   file_data <- generate_mock_data_coor()
   ok_data <- calc_data_year(data = file_data$data)
   data <- calc_percentage(datos = ok_data[, "X4"])
-  expect_equivalent(data, 0) # Función de Sergio, comprobamos que mantiene resultado
+  expect_equivalent(data, 0) # Check that it maintains the result.
 
   file_data_one <- generate_mock_data_coor(i_year = 1981, ndata = 3) 
   ok_data <- calc_data_year(data = file_data_one$data)[, 1:3]
@@ -640,14 +639,14 @@ test_that("calc_percentage", {
   ok_data[, "X2"] <- length(ok_data[, "X2"]):1
   ok_data[, "X3"] <- 1
 
-  data1 <- calc_percentage(datos = ok_data[, "X1"]) #MAL 35.13 -97.5 0 
+  data1 <- calc_percentage(datos = ok_data[, "X1"])
   expect_equivalent(round(data1, 3), c(3900)) 
   data2 <- calc_percentage(datos = ok_data[, "X2"])
   expect_equivalent(round(data2, 3), c(-97.5)) 
   data3 <- calc_percentage(datos = ok_data[, "X3"])
   expect_equivalent(round(data3, 3), c(0)) 
 
-  # file_data_one <- generate_mock_data_coor(i_year = 1901, ndata = 3) # 
+  # file_data_one <- generate_mock_data_coor(i_year = 1901, ndata = 3) 
   # ok_data <- calc_data_year(data = file_data_one$data)
   # ok_data[, "X1"] <- 1:length(ok_data[, "X1"])
   # ok_data[, "X2"] <- length(ok_data[, "X2"]):1
@@ -674,7 +673,7 @@ test_that("calc_percentage", {
   expect_equivalent(round(data3, 3), c(0)) 
 })
 
-#' testea la función coef_var
+#' tests the function coef_var
 #'
 #' @return None
 #' @export
@@ -683,12 +682,12 @@ test_that("coef_var", {
   file_data <- generate_mock_data_coor()
   ok_data <- calc_data_year(data = file_data$data)
   data <- coef_var(x = ok_data[, "X4"])
-  expect_equivalent(round(data, 3), 0.016) # Función de Sergio, comprobamos que mantiene resultado
+  expect_equivalent(round(data, 3), 0.016) # Check that it maintains the result.
 })
 
 ##########################################################
 
-#' testea la función second_data_fill_data
+#' tests the function second_data_fill_data
 #'
 #' @return None
 #' @export
@@ -702,13 +701,13 @@ test_that("second_data_fill_data", {
   data <- second_data_fill_data(file_data = file_data)
   expect_equivalent(file_data$coor[c("X1", "X3", "X4", "X5"), ], data$coor)
 
-  # Estación solitaria
+  # Solitary station
   file_data$coor["X5", ] <- c(45, 90)
   data <- second_data_fill_data(file_data = file_data)
   expect_equivalent(file_data$coor[c("X1", "X3", "X4", "X5"), ], data$coor)
 })
 
-#' testea la función alexanderson_homogenize_data
+#' tests the function alexanderson_homogenize_data
 #'
 #' @return None
 #' @export
@@ -720,14 +719,14 @@ test_that("alexanderson_homogenize_data", {
   data <- alexanderson_homogenize_data(file_data)
   expect_lt(data$data[1, 1], 0)
 
-  # Estación solitaria
+  # Solitary station
   file_data$data[12, "X5"] <- NA
   file_data$coor["X5", ] <- c(45, 90)
   data <- alexanderson_homogenize_data(file_data)
   expect_lt(data$data[1, 1], 0)
 })
 
-#' testea la función alexanderson_homogenize
+#' tests the function alexanderson_homogenize
 #'
 #' @return None
 #' @export
@@ -747,12 +746,12 @@ test_that("alexanderson_homogenize", {
 
   data_result <- alexanderson_homogenize(data = list("file_data1" = file_data1, "file_data2" = file_data2), folder = alexanderson_folder)
 
-  # Como todas las estaciones de data2 están en data1, sus valores finales tienen que ser los de data1 y no los de data2
+  # Since all the stations in data2 are present in data1, their final values must be those of data1 and not those of data2.
   expect_equal(data_result$file_data1$data, data1$data)
   expect_equal(data_result$file_data2$data, data1$data)
 })
 
-#' testea la función calculate_statistics
+#' tests the function calculate_statistics
 #'
 #' @return None
 #' @export
@@ -808,11 +807,11 @@ test_that("calculate_statistics", {
   file_data_one$data[, "X3"] <- 1
   return_data_1981 <- calculate_statistics_data(file_data = file_data_one, data_ori = file_data_one$data)
   expect_equivalent(round(return_data_1981$magnitude_change_percentage$year, 4), c(7200, -98.6301, 0)) # MAL 35.13 -97.5 0 
-  # mobile_trends_data$year$X1$matriz_p # calculan mobile_trends_data c(1871, 1901, 1931)  
+  # mobile_trends_data$year$X1$matriz_p # calculate mobile_trends_data c(1871, 1901, 1931)  
 })
 
 
-#' testea la función calculate_statistics_data
+#' tests the function calculate_statistics_data
 #'
 #' @return None
 #' @export
@@ -824,7 +823,7 @@ test_that("calculate_statistics_data", {
   expect_equivalent(data$regional_series[12], mean(file_data$data[12, ], na.rm = TRUE))
 })
 
-#' testea la función percentage_of_zeros
+#' tests the function percentage_of_zeros
 #'
 #' @return None
 #' @export
@@ -835,7 +834,7 @@ test_that("percentage_of_zeros", {
   expect_equivalent(percentage, 40)
 })
 
-#' testea la función delete_zero
+#' tests the function delete_zero
 #'
 #' @return None
 #' @export
@@ -871,10 +870,10 @@ test_that("delete_zero", {
 
   expect_equivalent(sum(!is.na(data[c(12:16), "X1"])), 0)
   expect_equivalent(sum(!is.na(data[c(12:16), "X2"])), 5)
-  expect_equivalent(sum(!is.na(data[c(12:16), "X3"])), 5) #No se eliminan porque febrero no cumple la condición
+  expect_equivalent(sum(!is.na(data[c(12:16), "X3"])), 5) # They are not deleted because February does not meet the condition
 })
 
-#' testea la función save_delete_data
+#' tests the function save_delete_data
 #'
 #' @return None
 #' @export
@@ -892,7 +891,7 @@ test_that("save_delete_data", {
   expect_equivalent(delete_data["X2", "data_delete"], 2)
 })
 
-#' testea la función delete_zones
+#' tests the function delete_zones
 #'
 #' @return None
 #' @export
@@ -915,7 +914,7 @@ test_that("delete_zones", {
   expect_equivalent(rownames(delete_data$start$coor), c("X1"))
 })
 
-#' testea la función calculate_reconstruction_statistics
+#' tests the function calculate_reconstruction_statistics
 #'
 #' @return None
 #' @export
@@ -926,7 +925,7 @@ test_that("calculate_reconstruction_statistics", {
   expect_equivalent(delete_data, c(1, 0, 0, 0))
 })
 
-#' testea la función main_mediterranean_calculations_
+#' tests the function main_mediterranean_calculations_
 #'
 #' @return None
 #' @export
@@ -934,7 +933,7 @@ test_that("calculate_reconstruction_statistics", {
 test_that("main_mediterranean_calculations_", {
   folder_name <- "test_result"
 
-  # Serie completa
+  # Complete series
   file_data <- generate_mock_data_coor(i_year = 1981, ndata = 1)
   file_data$coor[, "lat"] <- 40
   file_data$data[is.na(file_data$data)] = 3
@@ -942,7 +941,7 @@ test_that("main_mediterranean_calculations_", {
   data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
   expect_equivalent(dim(data_statistics$start_1981$coor)[1], 1)
 
-  # Serie con un NA al principio
+  # Series with an NA at the beginning
   folder_name <- "test_result"
   file_data <- generate_mock_data_coor(i_year = 1981, ndata = 1)
   file_data$coor[, "lat"] <- 40
@@ -950,7 +949,7 @@ test_that("main_mediterranean_calculations_", {
   data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
   expect_equivalent(is.null(data_statistics$start_1981), TRUE)
 
-  # Serie con un NA en medio
+  #  Series with an NA in the middle
   folder_name <- "test_result"
   file_data <- generate_mock_data_coor(i_year = 1981, ndata = 1)
   file_data$data[is.na(file_data$data)] <- 20
@@ -968,7 +967,7 @@ test_that("main_mediterranean_calculations_", {
   data_statistics <- main_mediterranean_calculations_(read_all_data = read_all_data, folder = folder_name)
   expect_equivalent(dim(data_statistics$start_1981$coor)[1], 5)
 
-  # 5 series con NA
+  # 5 series with NA
   file_data <- generate_mock_data_coor(i_year = 1981, ndata = 5)
   file_data$coor[, "lat"] <- 40
   read_all_data <- list(data_ori = file_data$data, data = file_data$data, coor = file_data$coor)
@@ -976,7 +975,7 @@ test_that("main_mediterranean_calculations_", {
   expect_equivalent(dim(data_statistics$start_1981$coor)[1], 5)
   expect_equivalent(sum(is.na(data_statistics$start_1981$data)), 0)
 
-  # 10 series con NA
+  # 10 series with NA
   file_data <- generate_mock_data_coor(i_year = 1981, ndata = 10)
   file_data$coor[, "lat"] <- 40
   read_all_data <- list(data_ori = file_data$data, data = file_data$data, coor = file_data$coor)
@@ -984,77 +983,4 @@ test_that("main_mediterranean_calculations_", {
   expect_equivalent(dim(data_statistics$start_1981$coor)[1], 10)
   expect_equivalent(sum(is.na(data_statistics$start_1981$data)), 0)
 })
-
-
-#######################################################################################v
-
-# #' testea la función main_mediterranean_calculations
-# #'
-# #' @return None
-# #' @export
-# #'
-# test_that("main_mediterranean_calculations", {
-#   control_data <- generate_mock_data_coor(i_year = 1950, ndata = 8) 
-#   i_ini <- "1930"
-#   folder_name <- "test_result"
-#   save_csvs(i_ini, folder_name, data_save = control_data$data, coor_save = control_data$coor)
-
-#   file_data <- "test_result/data_1930.csv"
-#   file_coor <- "test_result/coor_1930.csv"
-
-#   main_mediterranean_calculations(file_data = file_data, file_coor = file_coor, max_dist = max_dist_test)
-
-#   # sum(is.na(control_data$data[,"X5"]))
-
-# })
-
-# #' testea la función main_mediterranean_calculations con 6 datasets
-# #'
-# #' @return None
-# #' @export
-# #'
-# test_that("main_mediterranean_calculations", {
-#   control_data <- generate_mock_data_coor(i_year = 1950, ndata = 6) 
-#   i_ini <- "1930"
-#   folder_name <- "test_result"
-#   save_csvs(i_ini, folder_name, data_save = control_data$data, coor_save = control_data$coor)
-
-#   file_data <- "test_result/data_1930.csv"
-#   file_coor <- "test_result/coor_1930.csv"
-
-#   main_mediterranean_calculations(file_data = file_data, file_coor = file_coor, max_dist = max_dist_test)
-
-#   # sum(is.na(control_data$data[,"X5"]))
-
-# })
-
-
-# #' tes pruebas
-# #'
-# #' @return None
-# #' @export
-# #'
-# prueba_data <- function(){
-#   file_data <- file.path("israel", "israel_summer_data.csv")
-#   data_ori <- read.table(file_data, sep = ";", header = TRUE)
-#   data <- read.table("/mnt/dostb1/DATOS/sergio/calculos_mediterraneo/results/data_1980.csv", sep = ";", header = TRUE)
-
-#   rownames(data_ori) <- as.character(chron(paste0("01", "/", data_ori[, "month"], "/", data_ori[, "year"]), format = c(dates = "d/m/y", times = "h:m:s"), out.format = time_format))
-#   data_ori["month"] <- NULL
-#   data_ori["year"] <- NULL
-
-#   rownames(data) <- as.character(chron(paste0("01", "/", data[, "month"], "/", data[, "year"]), format = c(dates = "d/m/y", times = "h:m:s"), out.format = time_format))
-#   data["month"] <- NULL
-#   data["year"] <- NULL
-
-
-#   data_ori <- data_ori[rownames(data), colnames(data)]
-
-#   station <- colnames(data_ori)[129]
-#   sum(data[, station] != data_ori[, station], na.rm = TRUE)
-#   sum(is.na(data[, station]))
-#   sum(is.na(data_ori[, station])) 
-
-#   # which(!is.na(data_ori["01/04/1986", ]) & !is.na(data_ori["01/10/1984", ]) & is.na(data["01/04/1986", ]) & is.na(data["01/10/1984", ]))
-# }
 
