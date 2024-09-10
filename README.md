@@ -71,6 +71,8 @@ The content of the files can be explored for each of the result groups (using se
 * magnitude_change_percentage: Magnitude of change in precipitation (in %)
 * average_precipitation_stations:  The mean precipitation in each station (annual seasonal) 
 * cv_precipitation_stations: The coefficient of variation of precipitation in each station (annual and seasonal)
+* dry_spell_trend_data: Magnitude and statistical significance of drought duration and magnitude based on the SPI
+* mobile_trends_data: Data used to generate heat maps showing the magnitude of change and statistical significance of precipitation trends, considering various periods with different start and end points, with a minimum length of 30 years.
 * change_values_homog: The coefficients used in homogenization in each station.
 * break_points_homog: The break points of inhomogeneities
 * pvalue_trend_homog: p-values of the series before homogeneity testing and correction.

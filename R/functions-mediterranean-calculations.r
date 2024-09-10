@@ -1,4 +1,4 @@
-# Author: Sergio M. Vicente-Serrano  <http://www.ipe.csic.es/vicente-serrano-s.m.>; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC <http://www.ipe.csic.es/hidrologia-ambiental>. Fergus Reig Gracia <http://fergusreig.es/>; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC <http://www.ipe.csic.es/hidrologia-ambiental/>
+# Author: Sergio M. Vicente-Serrano  <https://lcsc.csic.es/staff/#sergiovicenteserrano>; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC <http://www.ipe.csic.es/hidrologia-ambiental>. Fergus Reig Gracia <http://fergusreig.es/>; Environmental Hydrology, Climate and Human Activity Interactions, Geoenvironmental Processes, IPE, CSIC <http://www.ipe.csic.es/hidrologia-ambiental/>
 # Version: 1.0
 
 # This program is free software: you can redistribute it and/or modify
@@ -30,17 +30,17 @@ NULL
 NULL
 
 ### Global variables
-crs84 <- 4326 #https://spatialreference.org/ref/epsg/wgs-84/ "epsg:4326"
-crs84m <- 4978  #https://epsg.io/4978 "EPSG:4978"
+crs84 <- 4326 # https://spatialreference.org/ref/epsg/wgs-84/ "epsg:4326"
+crs84m <- 4978  # https://epsg.io/4978 "EPSG:4978"
 
-min_years <- 10 # Años mínimos de datos para que no se elimine una estación
-min_overlap <- 10 # Años mínimos de datos de solape entre 2 series para rellenar una con la otra
-n_reference_stations <- 10 # Número de datos usados para sacar la serie de referencia en el control de calidad
-min_correlation <- 0.7 # Correlación mínima para usar el dato en el relleno
-max_diff_anomaly <- 0.8 # Máxima diferencia de anomalías para mantener dato en el control
-max_diff_anomaly_0 <- 0.8 # Máxima diferencia de anomalías para mantener dato en el control, si el dato es 0
-percentage_filled_data <- 95 # Número de datos que tiene una estación para entrar en el segundo relleno
-min_second_correlation <- 0.5 # Correlación mínima entre estaciones para usarse en el segundo relleno
+min_years <- 10 # Minimum years of data to prevent a station from being removed
+min_overlap <- 10 # Minimum years of overlapping data between two series to fill one from the other
+n_reference_stations <- 10 # Number of data points used to derive the reference series in quality control
+min_correlation <- 0.7 # Minimum correlation required to use data in the filling process
+max_diff_anomaly <- 0.8 # Maximum anomaly difference to keep data in quality control
+max_diff_anomaly_0 <- 0.8 # Maximum anomaly difference to keep data in quality control if the data point is 0
+percentage_filled_data <- 95 # Percentage of data a station must have to qualify for secondary filling
+min_second_correlation <- 0.5 # Minimum correlation between stations to be used in secondary filling
 
 ####################
 
