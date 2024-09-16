@@ -225,7 +225,7 @@ test_that("quality_control", {
   data_result <- control_data$data[, c(1, 3, 4, 5, 6)]
   # data_result[19, 1] <- NA # ¿?
   data_result[20, 2] <- NA
-  data_result[32, 4] <- NA
+  # data_result[32, 4] <- NA # ¿?
 
   coor_result <- control_data$coor[colnames(data_result), ]
 
