@@ -1,8 +1,10 @@
+A suite of functions designed for quality control, reconstruction, and homogenization of monthly precipitation series, enabling the generation of series for specific periods and the analysis of precipitation trends.
+
 To install the package, it can be done directly in R (we recommend upgrading to the latest available version beforehand) with the instructions:
 ```r
 install.packages("devtools")
 library(devtools)
-install_local('mediterraneancalculations_0.2-2.tar.gz') # This file has to be in the R directory
+install_local('mediterraneancalculations_0.2-3.tar.gz') # This file has to be in the R directory
 ```
 More installation ways can be seen here https://riptutorial.com/r/example/5556/install-package-from-local-source
 

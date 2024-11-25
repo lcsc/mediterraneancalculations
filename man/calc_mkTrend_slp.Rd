@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{calc_mkTrend_slp}
 \alias{calc_mkTrend_slp}
-\title{regresión lineal de los datos contra los años}
+\title{Linear regression of the data against years.}
 \usage{
 calc_mkTrend_slp(data)
 }
@@ -13,5 +13,5 @@ calc_mkTrend_slp(data)
 lm
 }
 \description{
-regresión lineal de los datos contra los años
+Linear regression of the data against years.
 }

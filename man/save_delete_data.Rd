@@ -2,20 +2,20 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{save_delete_data}
 \alias{save_delete_data}
-\title{Para cada estación guardar, número de datos de entrada y de datos eliminados}
+\title{For each station, save the number of input data and deleted data}
 \usage{
 save_delete_data(ori_data, process_data, folder)
 }
 \arguments{
-\item{ori_data}{datos iniciales}
+\item{ori_data}{original data}
 
-\item{process_data}{datos procesados}
+\item{process_data}{processed data}
 
-\item{folder}{carpeta en la que se guarda el fichero resultante}
+\item{folder}{folder where the resulting file is saved}
 }
 \value{
-datos eliminados y datos de entrada por estación
+deleted data and input data per station
 }
 \description{
-Para cada estación guardar, número de datos de entrada y de datos eliminados
+For each station, save the number of input data and deleted data
 }

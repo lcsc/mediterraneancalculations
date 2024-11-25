@@ -2,18 +2,18 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{alexanderson_homogenize}
 \alias{alexanderson_homogenize}
-\title{Test de Alexanderson para todos los ficheros disponibles (que han pasado el segundo relleno con éxito)}
+\title{Alexanderson test for all available files (which have successfully passed the second fill)}
 \usage{
 alexanderson_homogenize(data, folder)
 }
 \arguments{
-\item{data}{data y coor}
+\item{data}{data and coordinates}
 
-\item{folder}{directorio para guardar los datos de salida}
+\item{folder}{directory to save the output files}
 }
 \value{
-data y coor
+data and coordinates
 }
 \description{
-Test de Alexanderson para todos los ficheros disponibles (que han pasado el segundo relleno con éxito)
+Alexanderson test for all available files (which have successfully passed the second fill)
 }

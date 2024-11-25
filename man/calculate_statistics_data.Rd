@@ -2,30 +2,28 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{calculate_statistics_data}
 \alias{calculate_statistics_data}
-\title{Calcula estadísticos de los datos
-Tendencia mensual, estacional y anual, paquete Trend, función sens.slope
-Sumar 1 a todo para evitar 0s
-Significación, paquete modifiedmk, funsión bbsmk
-Serie promedio de todo el país
-SPI a escalas 3, 12, y 24 de cada serie, importante que sea imposible invertir las operaciones
-Código Sergio para generar arrays y hacer figuras de tendencia}
+\title{Calculates statistics for the data
+Monthly, seasonal, and annual trends, Trend package, sens.slope function
+Add 1 to everything to avoid zeros
+Significance, modifiedmk package, bbsmk function
+National average series
+SPI at scales 3, 12, and 24 for each series, important to ensure operations cannot be reversed}
 \usage{
 calculate_statistics_data(file_data, data_ori)
 }
 \arguments{
-\item{file_data}{datos y coordenadas}
+\item{file_data}{data and coordinates}
 
-\item{data_ori}{datos originales}
+\item{data_ori}{original data}
 }
 \value{
 None
 }
 \description{
-Calcula estadísticos de los datos
-Tendencia mensual, estacional y anual, paquete Trend, función sens.slope
-Sumar 1 a todo para evitar 0s
-Significación, paquete modifiedmk, funsión bbsmk
-Serie promedio de todo el país
-SPI a escalas 3, 12, y 24 de cada serie, importante que sea imposible invertir las operaciones
-Código Sergio para generar arrays y hacer figuras de tendencia
+Calculates statistics for the data
+Monthly, seasonal, and annual trends, Trend package, sens.slope function
+Add 1 to everything to avoid zeros
+Significance, modifiedmk package, bbsmk function
+National average series
+SPI at scales 3, 12, and 24 for each series, important to ensure operations cannot be reversed
 }

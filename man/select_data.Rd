@@ -2,18 +2,18 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{select_data}
 \alias{select_data}
-\title{Primeros datos válidos (no NAs)}
+\title{First valid data points (non-NAs)}
 \usage{
 select_data(data, n_reference_stations)
 }
 \arguments{
-\item{data}{datos}
+\item{data}{data}
 
-\item{n_reference_stations}{numero de datos a devolver}
+\item{n_reference_stations}{number of data points to return}
 }
 \value{
-primeros datos distintos de NA
+first non-NA data points
 }
 \description{
-Primeros datos válidos (no NAs)
+First valid data points (non-NAs)
 }

@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{sum_no_nas}
 \alias{sum_no_nas}
-\title{Número de datos distintos de NA}
+\title{Number of non-NA data points}
 \usage{
 sum_no_nas(data)
 }
 \arguments{
-\item{data}{datos}
+\item{data}{data}
 }
 \value{
-número de datos no NAs
+number of non-NA data points
 }
 \description{
-Número de datos distintos de NA
+Number of non-NA data points
 }

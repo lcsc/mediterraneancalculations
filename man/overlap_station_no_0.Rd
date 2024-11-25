@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{overlap_station_no_0}
 \alias{overlap_station_no_0}
-\title{Calcula el tiempo de solape existente entre cada par de series sin contar 0s}
+\title{Calculates the overlap time between each pair of series without counting zeros}
 \usage{
 overlap_station_no_0(control_data)
 }
 \arguments{
-\item{control_data}{datos de las estaciones y sus coordenadas}
+\item{control_data}{data from the stations and their coordinates}
 }
 \value{
-matriz con los meses que se solapan las estaciones entre si
+matrix with the months where the stations overlap with each other
 }
 \description{
-Calcula el tiempo de solape existente entre cada par de series sin contar 0s
+Calculates the overlap time between each pair of series without counting zeros
 }

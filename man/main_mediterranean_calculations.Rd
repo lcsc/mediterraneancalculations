@@ -2,20 +2,20 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{main_mediterranean_calculations}
 \alias{main_mediterranean_calculations}
-\title{Lee los ficheros de precipitación, calcula estadísticos y guarda los resultados
-Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)}
+\title{Reads precipitation files, calculates statistics, and saves the results
+The input files are 2 CSVs: one with coordinates in degrees (stations in rows and lat/lon in columns) and the other with monthly data (dates in rows and stations in columns)}
 \usage{
 main_mediterranean_calculations(file_data, file_coor)
 }
 \arguments{
-\item{file_data}{ruta del fichero de datos}
+\item{file_data}{path to the data file}
 
-\item{file_coor}{ruta del fichero de coordenadas}
+\item{file_coor}{path to the coordinates file}
 }
 \value{
 None
 }
 \description{
-Lee los ficheros de precipitación, calcula estadísticos y guarda los resultados
-Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)
+Reads precipitation files, calculates statistics, and saves the results
+The input files are 2 CSVs: one with coordinates in degrees (stations in rows and lat/lon in columns) and the other with monthly data (dates in rows and stations in columns)
 }

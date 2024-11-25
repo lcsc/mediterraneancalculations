@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{dry_spell_trend}
 \alias{dry_spell_trend}
-\title{esta función calcula la tendencia. Hay que definirle un objeto de años (years) con el año correspondiente a cada caso.}
+\title{Calculates the trend. A 'years' object must be defined with the corresponding year for each case.}
 \usage{
 dry_spell_trend(index, threshold)
 }
@@ -15,5 +15,5 @@ dry_spell_trend(index, threshold)
 output
 }
 \description{
-esta función calcula la tendencia. Hay que definirle un objeto de años (years) con el año correspondiente a cada caso.
+Calculates the trend. A 'years' object must be defined with the corresponding year for each case.
 }

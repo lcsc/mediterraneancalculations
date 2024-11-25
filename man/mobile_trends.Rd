@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{mobile_trends}
 \alias{mobile_trends}
-\title{esto te calcula unas tendencias móviles de una serie, en este caso que empieza en 1851 y termina en 2018,. Habría que hacerlo para cada base de datos y estación.}
+\title{Calculates the moving trends of a series.}
 \usage{
 mobile_trends(datos)
 }
@@ -13,5 +13,5 @@ mobile_trends(datos)
 list
 }
 \description{
-esto te calcula unas tendencias móviles de una serie, en este caso que empieza en 1851 y termina en 2018,. Habría que hacerlo para cada base de datos y estación.
+Calculates the moving trends of a series.
 }

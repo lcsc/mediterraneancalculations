@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{read_years}
 \alias{read_years}
-\title{Lee los años de cadenas de texto que terminan con los años}
+\title{Reads the years from text strings that end with years}
 \usage{
 read_years(txt)
 }
 \arguments{
-\item{txt}{texto o vector de textos}
+\item{txt}{text or vector of texts}
 }
 \value{
 list
 }
 \description{
-Lee los años de cadenas de texto que terminan con los años
+Reads the years from text strings that end with years
 }

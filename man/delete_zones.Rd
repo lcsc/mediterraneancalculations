@@ -2,16 +2,16 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{delete_zones}
 \alias{delete_zones}
-\title{Por debajo de 28 grados norte, eliminar estaciones}
+\title{Below 28 degrees north, remove stations}
 \usage{
 delete_zones(data)
 }
 \arguments{
-\item{data}{data y coor}
+\item{data}{data and coordinates}
 }
 \value{
-data and coor
+data and coordinates
 }
 \description{
-Por debajo de 28 grados norte, eliminar estaciones
+Below 28 degrees north, remove stations
 }

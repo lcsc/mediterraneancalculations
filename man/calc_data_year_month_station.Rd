@@ -2,18 +2,18 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{calc_data_year_month_station}
 \alias{calc_data_year_month_station}
-\title{Devuelve el slope z por años y estaciones}
+\title{Returns the slope z for years and stations}
 \usage{
 calc_data_year_month_station(data, calc_function)
 }
 \arguments{
-\item{data}{datos de las estaciones}
+\item{data}{station data}
 
-\item{calc_function}{función a utilizar}
+\item{calc_function}{function to use}
 }
 \value{
-lista de resultados
+list of results
 }
 \description{
-Devuelve el slope z por años y estaciones
+Returns the slope z for years and stations
 }

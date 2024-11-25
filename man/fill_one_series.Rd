@@ -2,18 +2,18 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{fill_one_series}
 \alias{fill_one_series}
-\title{Rellena la serie recibida utilizando las otras en el orden en el que están en other_series}
+\title{Fills the received series using others in the order they appear in other_series}
 \usage{
 fill_one_series(series, other_series)
 }
 \arguments{
-\item{series}{serie de datos a completar}
+\item{series}{data series to complete}
 
-\item{other_series}{series de datos con las que completar en el orden en el que se tienen que utilizar}
+\item{other_series}{data series to use for completing in the order they must be used}
 }
 \value{
-serie de datosd rellena
+filled data series
 }
 \description{
-Rellena la serie recibida utilizando las otras en el orden en el que están en other_series
+Fills the received series using others in the order they appear in other_series
 }

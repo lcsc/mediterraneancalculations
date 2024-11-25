@@ -2,20 +2,20 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{read_data}
 \alias{read_data}
-\title{Leemos los datos desde los CSVs con el formato acordado
-Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)}
+\title{Reads data from CSVs in the agreed format
+The input files are 2 CSVs: one with coordinates in degrees (stations in rows and columns lat and lon) and another with monthly data (dates in rows and stations in columns)}
 \usage{
 read_data(file_data, file_coor)
 }
 \arguments{
-\item{file_data}{ruta del fichero de datos}
+\item{file_data}{path to the data file}
 
-\item{file_coor}{ruta del fichero de coordenadas}
+\item{file_coor}{path to the coordinates file}
 }
 \value{
-datos originales, datos de interes y coordenadas de las estaciones leidas
+original data, data of interest, and coordinates of the stations read
 }
 \description{
-Leemos los datos desde los CSVs con el formato acordado
-Los ficheros de entrada son 2 CSVs uno de coordenadas en grados (filas las estaciones y columnas lat y lon y otro de datos mensuales con fechas en filas y las estaciones en las columnas)
+Reads data from CSVs in the agreed format
+The input files are 2 CSVs: one with coordinates in degrees (stations in rows and columns lat and lon) and another with monthly data (dates in rows and stations in columns)
 }

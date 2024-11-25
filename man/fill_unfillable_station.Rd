@@ -2,20 +2,22 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{fill_unfillable_station}
 \alias{fill_unfillable_station}
-\title{En los países que no salgan series, vamos a permitir que hasta tres años de datos se rellenen con la media. Es decir, pongamos que si para un periodo concreto 1900-2020 no salen series pero saldrían porque hay un máximo de tres años de datos (es decir 36 meses), rellenamos esos datos con el promedio de los 15 datos más cercanos en el tiempo. Por ejemplo, si es 1900, pues con la media de 1900-1915, si es 1915, pues con la media de 1907 a 1922. Siempre y cuando esos cinco años no estén entre 2015 y 2020 o en los cinco primeros años de las series, que entonces tiramos la serie pues podría afectar a las tendencias.
-Si las series son las de 1981-2020, lo mismo, pero dejamos solamente dos años de datos perdidos.}
+\title{In countries where no series are found, we allow up to three years of data to be filled with the average. For example, if for a specific period 1900-2020 no series appear, but there are a maximum of three years of data (i.e., 36 months), we fill these data with the average of the 15 closest data points in time.
+This applies as long as these five years are not between 2015 and 2020 or within the first five years of the series, as this could affect trends. 
+If the series are from 1981-2020, the same rule applies, but only two years of lost data are allowed.}
 \usage{
 fill_unfillable_station(data, fillable_years)
 }
 \arguments{
-\item{data}{datos de las estaciones que se intentarán rellenar}
+\item{data}{station data to be filled}
 
-\item{fillable_years}{años rellenables con la media mensual de la propia estación}
+\item{fillable_years}{years that can be filled with the station's monthly average}
 }
 \value{
 None
 }
 \description{
-En los países que no salgan series, vamos a permitir que hasta tres años de datos se rellenen con la media. Es decir, pongamos que si para un periodo concreto 1900-2020 no salen series pero saldrían porque hay un máximo de tres años de datos (es decir 36 meses), rellenamos esos datos con el promedio de los 15 datos más cercanos en el tiempo. Por ejemplo, si es 1900, pues con la media de 1900-1915, si es 1915, pues con la media de 1907 a 1922. Siempre y cuando esos cinco años no estén entre 2015 y 2020 o en los cinco primeros años de las series, que entonces tiramos la serie pues podría afectar a las tendencias.
-Si las series son las de 1981-2020, lo mismo, pero dejamos solamente dos años de datos perdidos.
+In countries where no series are found, we allow up to three years of data to be filled with the average. For example, if for a specific period 1900-2020 no series appear, but there are a maximum of three years of data (i.e., 36 months), we fill these data with the average of the 15 closest data points in time.
+This applies as long as these five years are not between 2015 and 2020 or within the first five years of the series, as this could affect trends. 
+If the series are from 1981-2020, the same rule applies, but only two years of lost data are allowed.
 }

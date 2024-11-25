@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{delete_zero}
 \alias{delete_zero}
-\title{Elimina datos si tenemos 8 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70 por ciento de ceros se elimina su dato. Elimina también datos si tenemos 5 meses o más seguidos de 0s, si todos los meses implicados tiene menos del 70 por ciento de ceros se eliminan todos.}
+\title{Removes data if there are 8 or more consecutive months of zeros, and if one of the involved months has less than 70\% zeros, its data is removed. Also removes data if there are 5 or more consecutive months of zeros, and if all the involved months have less than 70\% zeros, all are removed.}
 \usage{
 delete_zero(data)
 }
 \arguments{
-\item{data}{datos}
+\item{data}{data}
 }
 \value{
-datos con los grupos de 0s eliminados
+data with zero groups removed
 }
 \description{
-Elimina datos si tenemos 8 meses o más seguidos de 0s, si uno de los meses implicados tiene menos del 70 por ciento de ceros se elimina su dato. Elimina también datos si tenemos 5 meses o más seguidos de 0s, si todos los meses implicados tiene menos del 70 por ciento de ceros se eliminan todos.
+Removes data if there are 8 or more consecutive months of zeros, and if one of the involved months has less than 70\% zeros, its data is removed. Also removes data if there are 5 or more consecutive months of zeros, and if all the involved months have less than 70\% zeros, all are removed.
 }

@@ -2,22 +2,22 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{near_estations}
 \alias{near_estations}
-\title{Devuelve las estaciones por orden de cercanía
-Sin tener en cuenta las que están a más de 200 km (NA en esos casos)}
+\title{Returns stations in order of proximity
+Ignoring those that are more than 200 km away (NA in those cases)}
 \usage{
 near_estations(data, coor, max_dist)
 }
 \arguments{
-\item{data}{datos mensuales}
+\item{data}{monthly data}
 
-\item{coor}{coordenadas de las estaciones que corresponden con data}
+\item{coor}{coordinates of the stations corresponding to the data}
 
-\item{max_dist}{distancia máxima entre las series a utilizar}
+\item{max_dist}{maximum distance between the series to be used}
 }
 \value{
-correlación entre las estaciones
+correlation between stations
 }
 \description{
-Devuelve las estaciones por orden de cercanía
-Sin tener en cuenta las que están a más de 200 km (NA en esos casos)
+Returns stations in order of proximity
+Ignoring those that are more than 200 km away (NA in those cases)
 }

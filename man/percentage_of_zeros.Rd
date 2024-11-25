@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{percentage_of_zeros}
 \alias{percentage_of_zeros}
-\title{Devuelve el procentage de datos válidos que son 0s}
+\title{Returns the percentage of valid data that are zeros}
 \usage{
 percentage_of_zeros(data)
 }
 \arguments{
-\item{data}{datos}
+\item{data}{data}
 }
 \value{
 percentage
 }
 \description{
-Devuelve el procentage de datos válidos que son 0s
+Returns the percentage of valid data that are zeros
 }

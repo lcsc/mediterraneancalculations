@@ -2,20 +2,20 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{coef_var}
 \alias{coef_var}
-\title{Coeficientes de variación, desviación estándar
+\title{Coefficients of variation, standard deviation
 https://fhernanb.github.io/Manual-de-R/varia.html}
 \usage{
 coef_var(x, na.rm = FALSE)
 }
 \arguments{
-\item{x}{datos}
+\item{x}{data}
 
-\item{na.rm}{Ignorara NAs}
+\item{na.rm}{Ignore NAs}
 }
 \value{
 percentage
 }
 \description{
-Coeficientes de variación, desviación estándar
+Coefficients of variation, standard deviation
 https://fhernanb.github.io/Manual-de-R/varia.html
 }

@@ -2,22 +2,22 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{save_csvs}
 \alias{save_csvs}
-\title{Guardamos los datos en CSVs}
+\title{Saves the data into CSVs}
 \usage{
 save_csvs(i_ini, folder_name, data_save, coor_save)
 }
 \arguments{
-\item{i_ini}{identificador de los ficheros}
+\item{i_ini}{identifier for the files}
 
-\item{folder_name}{carpeta en la que guardar el fichero}
+\item{folder_name}{folder where the file will be saved}
 
-\item{data_save}{datos de las estaciones a guardar}
+\item{data_save}{data from the stations to save}
 
-\item{coor_save}{datos de coordenadas a guardar}
+\item{coor_save}{coordinates data to save}
 }
 \value{
 None
 }
 \description{
-Guardamos los datos en CSVs
+Saves the data into CSVs
 }

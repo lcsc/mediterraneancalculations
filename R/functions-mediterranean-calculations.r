@@ -428,7 +428,7 @@ quality_control <- function(data, coor, max_dist, max_diff_anomaly, max_diff_ano
 
 #' Calculates the overlap time between each pair of series
 #'
-#' @param control_datadata from the stations and their coordinates
+#' @param control_data data from the stations and their coordinates
 #'
 #' @return matrix with the months where the stations overlap with each other
 #' @export
@@ -1171,7 +1171,7 @@ percentage_of_zeros <- function(data) {
   return(100 * sum(data == 0, na.rm = TRUE) / sum(!is.na(data), na.rm = TRUE))
 }
 
-#' Removes data if there are 8 or more consecutive months of zeros, and if one of the involved months has less than 70% zeros, its data is removed. Also removes data if there are 5 or more consecutive months of zeros, and if all the involved months have less than 70% zeros, all are removed.
+#' Removes data if there are 8 or more consecutive months of zeros, and if one of the involved months has less than 70\% zeros, its data is removed. Also removes data if there are 5 or more consecutive months of zeros, and if all the involved months have less than 70\% zeros, all are removed.
 #' 
 #' @param data data
 #'
@@ -1201,7 +1201,7 @@ delete_zero <- function(data) {
     station_rle <- rle(data_zero[, station])
     position <- cumsum(station_rle$lengths)
 
-    # Removes data if there are 8 or more consecutive months of zeros, and if one of the involved months has less than 70% zeros, its data is removed.
+    # Removes data if there are 8 or more consecutive months of zeros, and if one of the involved months has less than 70\% zeros, its data is removed.
     zero_groups <- which(!is.na(station_rle$values) & station_rle$values == 0 & station_rle$lengths >= 8)
     zero_group <- zero_groups[1]
     for(zero_group in zero_groups){
@@ -1209,7 +1209,7 @@ delete_zero <- function(data) {
         data_zero[range[months_percentage[station, as.numeric(base::months(dates[range]))] < 70], station] <- NA
     }
 
-    # Removes data if there are 5 or more consecutive months of zeros, and if all the involved months have less than 70% zeros, all are removed.
+    # Removes data if there are 5 or more consecutive months of zeros, and if all the involved months have less than 70\% zeros, all are removed.
     zero_groups <- which(!is.na(station_rle$values) & station_rle$values == 0 & station_rle$lengths >= 5 & station_rle$lengths < 8)
     zero_group <- zero_groups[1]
     for(zero_group in zero_groups){

@@ -2,20 +2,20 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{main_mediterranean_calculations_}
 \alias{main_mediterranean_calculations_}
-\title{Calcula los estadísticos para un país}
+\title{Calculates statistics for a country}
 \usage{
 main_mediterranean_calculations_(read_all_data, folder, pb = NULL)
 }
 \arguments{
-\item{read_all_data}{datos de entrada}
+\item{read_all_data}{input data}
 
-\item{folder}{carpeta donde guarda ficheros}
+\item{folder}{directory where files are saved}
 
-\item{pb}{barra de progreso}
+\item{pb}{progress bar}
 }
 \value{
 None
 }
 \description{
-Calcula los estadísticos para un país
+Calculates statistics for a country
 }

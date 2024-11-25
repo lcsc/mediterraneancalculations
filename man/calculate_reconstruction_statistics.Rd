@@ -2,22 +2,22 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{calculate_reconstruction_statistics}
 \alias{calculate_reconstruction_statistics}
-\title{Calcular estadísticos de la reconstrucción
-- hydroGOF -- estadísitico por estación
-- D / MAE / PBIAS / RMSE  - por estación y mes}
+\title{Calculate reconstruction statistics
+- hydroGOF -- statistic per station
+- D / MAE / PBIAS / RMSE  - per station and month}
 \usage{
 calculate_reconstruction_statistics(sim, obs)
 }
 \arguments{
-\item{sim}{datos rellenados}
+\item{sim}{filled data}
 
-\item{obs}{datos iniciales}
+\item{obs}{original data}
 }
 \value{
-datos eliminados y datos de entrada por estación
+deleted data and input data per station
 }
 \description{
-Calcular estadísticos de la reconstrucción
-- hydroGOF -- estadísitico por estación
-- D / MAE / PBIAS / RMSE  - por estación y mes
+Calculate reconstruction statistics
+- hydroGOF -- statistic per station
+- D / MAE / PBIAS / RMSE  - per station and month
 }

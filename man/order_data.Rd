@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{order_data}
 \alias{order_data}
-\title{Ordena los datos y devuelve una lista con el orden}
+\title{Sorts the data and returns a list with the order}
 \usage{
 order_data(data)
 }
 \arguments{
-\item{data}{datos}
+\item{data}{data}
 }
 \value{
 list
 }
 \description{
-Ordena los datos y devuelve una lista con el orden
+Sorts the data and returns a list with the order
 }

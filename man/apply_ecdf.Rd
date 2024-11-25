@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{apply_ecdf}
 \alias{apply_ecdf}
-\title{Anomalías de los datos mensuales}
+\title{Monthly data anomalies}
 \usage{
 apply_ecdf(data)
 }
 \arguments{
-\item{data}{datos mensuales}
+\item{data}{monthly data}
 }
 \value{
-anomalías de los datos
+data anomalies
 }
 \description{
-Anomalías de los datos mensuales
+Monthly data anomalies
 }

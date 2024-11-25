@@ -2,26 +2,26 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{second_data_fill}
 \alias{second_data_fill}
-\title{Realiza un segundo relleno
-Para cada base de datos (1870, 1900...)
-Estaciones con más del 90 o 95% de datos rellenos
-Ordenamos las estaciones por correlación (mínima 0.5) y rellenamos usando los 10 métodos...
-Las estaciones sin relleno total las tiramos}
+\title{Performs a second fill
+For each dataset (1870, 1900...)
+Stations with more than 90 or 95% of filled data
+Stations are sorted by correlation (minimum 0.5), and filling is done using the 10 methods...
+Stations without total fill are discarded}
 \usage{
 second_data_fill(data, max_dist_eval = NA)
 }
 \arguments{
-\item{data}{data y coor}
+\item{data}{data and coordinates}
 
-\item{max_dist_eval}{maxima distancia para el relleno}
+\item{max_dist_eval}{maximum distance for filling}
 }
 \value{
-data y coor
+data and coordinates
 }
 \description{
-Realiza un segundo relleno
-Para cada base de datos (1870, 1900...)
-Estaciones con más del 90 o 95% de datos rellenos
-Ordenamos las estaciones por correlación (mínima 0.5) y rellenamos usando los 10 métodos...
-Las estaciones sin relleno total las tiramos
+Performs a second fill
+For each dataset (1870, 1900...)
+Stations with more than 90 or 95% of filled data
+Stations are sorted by correlation (minimum 0.5), and filling is done using the 10 methods...
+Stations without total fill are discarded
 }

@@ -2,18 +2,18 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{calc_percentage}
 \alias{calc_percentage}
-\title{Diferencia en porcentaje}
+\title{Percentage difference}
 \usage{
 calc_percentage(datos, years = NA)
 }
 \arguments{
-\item{datos}{datos}
+\item{datos}{data}
 
-\item{years}{años}
+\item{years}{years}
 }
 \value{
 percentage
 }
 \description{
-Diferencia en porcentaje
+Percentage difference
 }

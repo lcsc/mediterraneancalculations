@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{calc_data_year}
 \alias{calc_data_year}
-\title{Suma los datos de cada año, para devolver un solo dato anual}
+\title{Sums the data for each year to return a single annual value}
 \usage{
 calc_data_year(data)
 }
 \arguments{
-\item{data}{matriz de datos}
+\item{data}{data matrix}
 }
 \value{
-un dato por año
+one value per year
 }
 \description{
-Suma los datos de cada año, para devolver un solo dato anual
+Sums the data for each year to return a single annual value
 }

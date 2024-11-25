@@ -2,36 +2,32 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{alexanderson_homogenize_data}
 \alias{alexanderson_homogenize_data}
-\title{Homogeneizar - test de Alexanderson
-Lo usamos en code_web_maps/snht_functions.R
-Existe también librería snht de R
--- Serie de referencia, compara y corrige
-Para cada base de datos (1870, 1900...)
-Elegimos las 5 series más correlacionadas usandos las serie de diferencias
-Con las 5 hacemos una media ponderada, (correlación * dato1 + ...) / sum(correlaciones) y será la serie de referencia
-Alexanderson nos dará un punto de ruptura y un valor ratio por el que multiplicar la parte antigua... iterar mientras de puntos de ruptura
-Guardar estadísticos de inhomogeneidades. Básicamente número de datos cambiados en cada series y momento de la inhomogeneidad. 
-CSV con número de datos cambiados y CSV con punto de inhomogeneidad - todo x 12 meses}
+\title{Homogenization - Alexanderson test
+Reference series, compares and corrects
+For each dataset (1870, 1900...)
+The 5 most correlated series are chosen using the difference series
+A weighted average is made with the 5 series (correlation * data1 + ...) / sum(correlations), which will be the reference series
+Alexanderson will give a breakpoint and a ratio value to multiply the older part by... iterate while breakpoints are given
+Save statistics on inhomogeneities. Basically, the number of data points changed in each series and the time of the inhomogeneity.
+CSV with the number of data points changed and CSV with inhomogeneity point - all x 12 months}
 \usage{
 alexanderson_homogenize_data(file_data, no_use_series = c())
 }
 \arguments{
-\item{file_data}{ruta del fichero de datos}
+\item{file_data}{path to the data file}
 
-\item{no_use_series}{series que no se homogeneizarán}
+\item{no_use_series}{series that will not be homogenized}
 }
 \value{
 None
 }
 \description{
-Homogeneizar - test de Alexanderson
-Lo usamos en code_web_maps/snht_functions.R
-Existe también librería snht de R
--- Serie de referencia, compara y corrige
-Para cada base de datos (1870, 1900...)
-Elegimos las 5 series más correlacionadas usandos las serie de diferencias
-Con las 5 hacemos una media ponderada, (correlación * dato1 + ...) / sum(correlaciones) y será la serie de referencia
-Alexanderson nos dará un punto de ruptura y un valor ratio por el que multiplicar la parte antigua... iterar mientras de puntos de ruptura
-Guardar estadísticos de inhomogeneidades. Básicamente número de datos cambiados en cada series y momento de la inhomogeneidad. 
-CSV con número de datos cambiados y CSV con punto de inhomogeneidad - todo x 12 meses
+Homogenization - Alexanderson test
+Reference series, compares and corrects
+For each dataset (1870, 1900...)
+The 5 most correlated series are chosen using the difference series
+A weighted average is made with the 5 series (correlation * data1 + ...) / sum(correlations), which will be the reference series
+Alexanderson will give a breakpoint and a ratio value to multiply the older part by... iterate while breakpoints are given
+Save statistics on inhomogeneities. Basically, the number of data points changed in each series and the time of the inhomogeneity.
+CSV with the number of data points changed and CSV with inhomogeneity point - all x 12 months
 }

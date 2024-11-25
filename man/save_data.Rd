@@ -2,32 +2,32 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{save_data}
 \alias{save_data}
-\title{Guarda la salida en 5 fichero con los datos
- 5 ficheros que indican si cada datos es original o rellenado (1 dato no alterado, 0 dato alterado)
- y 5 ficheros de coordenadas para las estaciones de cada fichero de datos, que son:
-- 1870 a 2020 con más de 80 años originales
-- 1900 a 2020 con más de 80 años originales
-- 1930 a 2020 con más de 60 años originales
-- 1950 a 2020 con más de 40 años originales
-- 1990 a 2020 con más de 30 años originales}
+\title{Saves the output in 5 files with the data
+ 5 files indicating whether each data point is original or filled (1 for unaltered data, 0 for altered data)
+ and 5 coordinate files for the stations in each data file, which are:
+- 1870 to 2020 with more than 0.75 of years of original data
+- 1900 to 2020 with more than 0.75 of years of original data
+- 1930 to 2020 with more than 0.75 of years of original data
+- 1950 to 2020 with more than 0.75 of years of original data
+- 1990 to 2020 with more than 0.75 of years of original data}
 \usage{
 save_data(data_ori, control_data)
 }
 \arguments{
-\item{data_ori}{datos originales leidos de los ficheros CSV}
+\item{data_ori}{original data read from CSV files}
 
-\item{control_data}{datos de las estaciones y sus coordenadas}
+\item{control_data}{data from the stations and their coordinates}
 }
 \value{
-data y coor con los datos que no pasan el control eliminados
+data and coordinates with data that did not pass the control removed
 }
 \description{
-Guarda la salida en 5 fichero con los datos
- 5 ficheros que indican si cada datos es original o rellenado (1 dato no alterado, 0 dato alterado)
- y 5 ficheros de coordenadas para las estaciones de cada fichero de datos, que son:
-- 1870 a 2020 con más de 80 años originales
-- 1900 a 2020 con más de 80 años originales
-- 1930 a 2020 con más de 60 años originales
-- 1950 a 2020 con más de 40 años originales
-- 1990 a 2020 con más de 30 años originales
+Saves the output in 5 files with the data
+ 5 files indicating whether each data point is original or filled (1 for unaltered data, 0 for altered data)
+ and 5 coordinate files for the stations in each data file, which are:
+- 1870 to 2020 with more than 0.75 of years of original data
+- 1900 to 2020 with more than 0.75 of years of original data
+- 1930 to 2020 with more than 0.75 of years of original data
+- 1950 to 2020 with more than 0.75 of years of original data
+- 1990 to 2020 with more than 0.75 of years of original data
 }

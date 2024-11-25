@@ -2,7 +2,7 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{mkTrend}
 \alias{mkTrend}
-\title{Calcula pval (a veces no da resultado por temas de iteración) entonces coger pval0.}
+\title{Calculates p-value (sometimes it doesn't result due to iteration issues, so take pval0).}
 \usage{
 mkTrend(x, ci = 0.95)
 }
@@ -15,5 +15,5 @@ mkTrend(x, ci = 0.95)
 list
 }
 \description{
-Calcula pval (a veces no da resultado por temas de iteración) entonces coger pval0.
+Calculates p-value (sometimes it doesn't result due to iteration issues, so take pval0).
 }

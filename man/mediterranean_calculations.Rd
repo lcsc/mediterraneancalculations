@@ -2,20 +2,20 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{mediterranean_calculations}
 \alias{mediterranean_calculations}
-\title{Hace el control de calidad
-Control de calidad: Se estaciones con menos de 20 años de datos y usando las 10 más correlacionadas a menos de 200 km, se desechan los datos con un percentil de diferencia de más de 0.6.}
+\title{Performs quality control
+Quality control: Stations with less than 20 years of data are removed, and using the 10 most correlated stations within 200 km, data with a percentile difference greater than 0.6 are discarded.}
 \usage{
 mediterranean_calculations(data, max_dist_eval)
 }
 \arguments{
-\item{data}{ruta del fichero de datos}
+\item{data}{path to the data file}
 
-\item{max_dist_eval}{máxima distancia entre 2 estaciones para usar una para evaluar una con la otra}
+\item{max_dist_eval}{maximum distance between two stations to use one to evaluate or complete the other}
 }
 \value{
-data y coor con los datos que no pasan el control eliminados
+data and coordinates with data that do not pass the control removed
 }
 \description{
-Hace el control de calidad
-Control de calidad: Se estaciones con menos de 20 años de datos y usando las 10 más correlacionadas a menos de 200 km, se desechan los datos con un percentil de diferencia de más de 0.6.
+Performs quality control
+Quality control: Stations with less than 20 years of data are removed, and using the 10 most correlated stations within 200 km, data with a percentile difference greater than 0.6 are discarded.
 }

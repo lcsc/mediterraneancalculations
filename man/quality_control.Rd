@@ -2,30 +2,30 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{quality_control}
 \alias{quality_control}
-\title{Control de calidad
-Estaciones con menos de 20 años de datos retirar
-Usando las 10 más cercanas a menos de 200 km, desechar si promedio de percentil se diferencia en más de 0.6 
-o en más de 0.5 para datos 0}
+\title{Quality control
+Stations with less than 20 years of data are removed
+Using the 10 closest within 200 km, discard if the average percentile differs by more than 0.6
+or more than 0.5 for data points with a value of 0}
 \usage{
 quality_control(data, coor, max_dist, max_diff_anomaly, max_diff_anomaly_0)
 }
 \arguments{
-\item{data}{datos}
+\item{data}{data}
 
-\item{coor}{coordenadas}
+\item{coor}{coordinates}
 
-\item{max_dist}{máxima distancia entre 2 estaciones para usar una para evaluar o completar la otra}
+\item{max_dist}{maximum distance between two stations to use one to evaluate or complete the other}
 
-\item{max_diff_anomaly}{máxima diferencia de anomalías para mantener dato en el control}
+\item{max_diff_anomaly}{maximum anomaly difference to keep data in quality control}
 
-\item{max_diff_anomaly_0}{máxima diferencia de anomalías para mantener dato en el control, si el dato es 0}
+\item{max_diff_anomaly_0}{maximum anomaly difference to keep data in quality control, if the data point is 0}
 }
 \value{
-data y coor con los datos que no pasan el control eliminados
+data and coor with data points that do not pass the control removed
 }
 \description{
-Control de calidad
-Estaciones con menos de 20 años de datos retirar
-Usando las 10 más cercanas a menos de 200 km, desechar si promedio de percentil se diferencia en más de 0.6 
-o en más de 0.5 para datos 0
+Quality control
+Stations with less than 20 years of data are removed
+Using the 10 closest within 200 km, discard if the average percentile differs by more than 0.6
+or more than 0.5 for data points with a value of 0
 }

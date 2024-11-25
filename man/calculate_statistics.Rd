@@ -2,18 +2,18 @@
 % Please edit documentation in R/mediterranean-calculations.r
 \name{calculate_statistics}
 \alias{calculate_statistics}
-\title{Salida final con todos los estadíticos, serie regional promedio, tendencias, SPI...}
+\title{Final output with all statistics, regional average series, trends, SPI...}
 \usage{
 calculate_statistics(data, data_ori)
 }
 \arguments{
-\item{data}{data y coor}
+\item{data}{data and coordinates}
 
-\item{data_ori}{data original}
+\item{data_ori}{original data}
 }
 \value{
-data and coor
+data and coordinates
 }
 \description{
-Salida final con todos los estadíticos, serie regional promedio, tendencias, SPI...
+Final output with all statistics, regional average series, trends, SPI...
 }

@@ -2,16 +2,16 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{calc_mkTrend_pval}
 \alias{calc_mkTrend_pval}
-\title{Devuelve el pval calculado por mkTrend o el pval0 si el pval era NA}
+\title{Returns the p-value calculated by mkTrend or pval0 if pval was NA}
 \usage{
 calc_mkTrend_pval(data)
 }
 \arguments{
-\item{data}{matriz de datos}
+\item{data}{data matrix}
 }
 \value{
 pval
 }
 \description{
-Devuelve el pval calculado por mkTrend o el pval0 si el pval era NA
+Returns the p-value calculated by mkTrend or pval0 if pval was NA
 }

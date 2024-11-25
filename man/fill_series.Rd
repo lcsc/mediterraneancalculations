@@ -2,26 +2,26 @@
 % Please edit documentation in R/functions-mediterranean-calculations.r
 \name{fill_series}
 \alias{fill_series}
-\title{Rellenado mensual de las series
-Usamos estaciones a menos de 200km con correlación por encima de 0.7
-Para junio, julio y agosto, rellenamos con la más cercana
-Utilizar el método que mejor correlaciona con la serie original}
+\title{Monthly series filling
+We use stations less than 200km away with correlations above 0.7.
+For June, July, and August, we fill with the closest station.
+Use the method that correlates best with the original series.}
 \usage{
 fill_series(control_data, min_correlation, max_dist)
 }
 \arguments{
-\item{control_data}{datos de las estaciones y sus coordenadas}
+\item{control_data}{data from the stations and their coordinates}
 
-\item{min_correlation}{Correlación mínima para usar el dato en el relleno}
+\item{min_correlation}{minimum correlation to use the data in filling}
 
-\item{max_dist}{distancia máxima entre las series a utilizar}
+\item{max_dist}{maximum distance between series to use}
 }
 \value{
-data y coor con los datos que no pasan el control eliminados
+data and coordinates with data that did not pass the control removed
 }
 \description{
-Rellenado mensual de las series
-Usamos estaciones a menos de 200km con correlación por encima de 0.7
-Para junio, julio y agosto, rellenamos con la más cercana
-Utilizar el método que mejor correlaciona con la serie original
+Monthly series filling
+We use stations less than 200km away with correlations above 0.7.
+For June, July, and August, we fill with the closest station.
+Use the method that correlates best with the original series.
 }
