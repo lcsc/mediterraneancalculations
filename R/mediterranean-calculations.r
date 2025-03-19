@@ -28,10 +28,10 @@
 mediterranean_calculations <- function(data, max_dist_eval){
 
 	# Remove data if there are 5 or more consecutive months of zeros, if any of the months involved has less than 70% zeros
-	delete_zero_data <- delete_zero(data = data$data)
+	# delete_zero_data <- delete_zero(data = data$data)
 
 	# Quality control, complete series and invalid loose data are removed
-	control_data <- quality_control(data = delete_zero_data, coor = data$coor, max_dist = max_dist_eval, max_diff_anomaly = max_diff_anomaly, max_diff_anomaly_0 = max_diff_anomaly_0)
+	control_data <- quality_control(data = data$data, coor = data$coor, max_dist = max_dist_eval, max_diff_anomaly = max_diff_anomaly, max_diff_anomaly_0 = max_diff_anomaly_0)
 
 	return(control_data)
 }
@@ -125,7 +125,7 @@ second_data_fill <- function(data, max_dist_eval = NA){
 alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
 
 	max_i_snht <- 20
-	significance_level <- 100 * (1 - 0.01)
+	significance_level <- 100 * (1 - 0.05)
 	data_save <- file_data$data
 
 	# Search for inhomogeneities only in series that were not already in previous periods
@@ -355,13 +355,13 @@ calculate_statistics <- function(data, data_ori){
 #' @export
 #'
 delete_zones <- function(data){
-	min_north <- 28 # latitude
+	# min_north <- 28 # latitude
 
-	i_ini <- names(data)[length(data)]
-	for(i_ini in names(data)){
-		data[[i_ini]]$coor <- data[[i_ini]]$coor[data[[i_ini]]$coor[, "lat"] >= min_north, , drop = FALSE]
-		data[[i_ini]]$data <- data[[i_ini]]$data[, rownames(data[[i_ini]]$coor), drop = FALSE]
-	}
+	# i_ini <- names(data)[length(data)]
+	# for(i_ini in names(data)){
+	# 	data[[i_ini]]$coor <- data[[i_ini]]$coor[data[[i_ini]]$coor[, "lat"] >= min_north, , drop = FALSE]
+	# 	data[[i_ini]]$data <- data[[i_ini]]$data[, rownames(data[[i_ini]]$coor), drop = FALSE]
+	# }
 	return(data)
 }
 

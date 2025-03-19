@@ -54,8 +54,8 @@ cdf_functions <- list(exp = lmom::cdfexp, gam = lmom::cdfgam, gev = lmom::cdfgev
 
 alexanderson_folder <- "results"
 
-i_inis <- c(1871, 1901, 1931, 1951, 1961, 1981)
-i_end <- 2020
+i_inis <- c(1871, 1881, 1891, 1901, 1911, 1921, 1931, 1941, 1951, 1961, 1981)
+i_end <- 2024
 
 # snht critical levels (simulated by Khaliq and Ouarda 2007)
 snht_cval <- matrix(data = c(
