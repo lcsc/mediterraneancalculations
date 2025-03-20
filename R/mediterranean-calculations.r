@@ -379,7 +379,7 @@ main_mediterranean_calculations <- function(file_data, file_coor){
                      max = 100,  # Maximum value of the progress bar
                      style = 3,  # Style of the bar (other styles: style = 1 and style = 2)
                      width = 50, # Width of the bar. Default: getOption("width")
-                     char = "=")
+                     char = "=")/mnt/disco/ficheros/ipe/repo_mediterraneancalculations_chile_lluvias_2024/mediterraneancalculations/R
 
 	folder <- alexanderson_folder
 
@@ -392,7 +392,7 @@ main_mediterranean_calculations <- function(file_data, file_coor){
 
 	utils::setTxtProgressBar(pb, 95)
 
-	saveRDS(data_statistics, file = "mediterranean_calculations.rds")	
+	saveRDS(data_statistics, file = "chile_calculations.rds")	
 	# data_save <- readRDS("mediterranean_calculations.rds")
 
 	utils::setTxtProgressBar(pb, 100)
