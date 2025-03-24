@@ -55,7 +55,7 @@ second_data_fill_data <- function(file_data, fillable_years = 36, max_dist = NA)
 	control_data <- list(data = file_data$data[, no_nas, drop = FALSE], coor = file_data$coor[no_nas, , drop = FALSE])
 
 	# Second fill
-	fill_data <- fill_series(control_data = control_data, min_correlation = min_second_correlation, max_dist = max_dist)
+	fill_data <- fill_series(control_data = control_data, min_correlation = min_second_correlation, max_dist = max_dist, allow_exceed_maximum = FALSE)
 
 	# Remove incomplete stations
 	no_nas <- dim(fill_data$data)[1] - apply(fill_data$data, c(2), sum_no_nas) == 0
@@ -379,7 +379,7 @@ main_mediterranean_calculations <- function(file_data, file_coor){
                      max = 100,  # Maximum value of the progress bar
                      style = 3,  # Style of the bar (other styles: style = 1 and style = 2)
                      width = 50, # Width of the bar. Default: getOption("width")
-                     char = "=")/mnt/disco/ficheros/ipe/repo_mediterraneancalculations_chile_lluvias_2024/mediterraneancalculations/R
+                     char = "=")
 
 	folder <- alexanderson_folder
 
@@ -424,7 +424,7 @@ main_mediterranean_calculations_ <- function(read_all_data, folder, pb = NULL){
 	if(!is.null(pb)) { utils::setTxtProgressBar(pb, 15) }
 
 	# B) Reconstruction - First fill and second fill, only between the data already selected in each dataset
-	fill_data <- fill_series(control_data = control_data, min_correlation = min_correlation, max_dist = max_dist_fill)
+	fill_data <- fill_series(control_data = control_data, min_correlation = min_correlation, max_dist = max_dist_fill, allow_exceed_maximum = TRUE)
 	data_first_fill <- save_data(data_ori = read_all_data$data_ori, control_data = fill_data)
 	data_second_fill <- second_data_fill(data = data_first_fill, max_dist_eval = max_dist_second_eval)
 

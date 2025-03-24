@@ -520,11 +520,12 @@ fill_unfillable_station  <- function(data, fillable_years){
 #' @param control_data data from the stations and their coordinates
 #' @param min_correlation minimum correlation to use the data in filling
 #' @param max_dist maximum distance between series to use
+#' @param allow_exceed_maximum if TRUE, allows the maximum value of the series to be exceeded
 #'
 #' @return data and coordinates with data that did not pass the control removed
 #' @export
 #'
-fill_series <- function(control_data, min_correlation, max_dist){
+fill_series <- function(control_data, min_correlation, max_dist, allow_exceed_maximum){
 
   array_colnames <- c("d", "mae", "pbias", "rmse")
 
@@ -595,6 +596,9 @@ fill_series <- function(control_data, min_correlation, max_dist){
               mean_refe_10 <- mean(data_refe_10[!is.na(return_control_data$data[, i_series]) & !is.na(data_refe_10)])
 
               data_refe_ok <- (mean_10 / mean_refe_10) * data_refe_10
+              if(!allow_exceed_maximum) { 
+                data_refe_ok[data_refe_ok > max(return_control_data$data[, i_series], na.rm = TRUE)] <- NA 
+              }
               return_control_data$data[is.na(return_control_data$data[, i_series]), i_series] <- data_refe_ok[is.na(return_control_data$data[, i_series])]
             }
           }
