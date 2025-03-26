@@ -143,6 +143,8 @@ alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
 	break_points <- array(NA, dim = c(length(months), length(all_series), max_i_snht), dimnames = list(months, all_series, c(1:max_i_snht)))
 	change_values <- array(NA, dim = c(length(months), length(all_series), max_i_snht), dimnames = list(months, all_series, c(1:max_i_snht)))
 
+	delete_series <- c()
+
 	i_month <- months[5]
 	for(i_month in months){
 	    data_cor <- data_cor_list[[i_month]]
@@ -151,7 +153,6 @@ alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
     	data_month <- NA
     	i_snht <- 1
 		while(i_snht < max_i_snht & (length(data_month) == 1 | sum(data_save_month != data_month, na.rm = TRUE) > 0)){
-			# print(paste(i_month))
 			data_month <- data_save_month
 			i_series <- use_series[12]
 			for(i_series in use_series){
@@ -175,15 +176,19 @@ alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
 		    		if(sum(!is.na(Q)) > 0 & length(unique(Q)) > 1){
 			    		q_snht <- snht(cbind(1:length(Q), Q), significance_level) # https://sites.google.com/site/phaenggi23/rscripts
 			    		break_serie <- q_snht$T0x
-	      				pre_post_mean <- round(mean(data_month[c((break_serie + 1):(dim(data_month)[1])), i_series]) / mean(data_month[c(1:break_serie), i_series]), digits = 15)
-	      				pre_post_mean[pre_post_mean == Inf] = NA
+							pre_post_mean <- round(mean(data_month[c((break_serie + 1):(dim(data_month)[1])), i_series]) / mean(data_month[c(1:break_serie), i_series]), digits = 15)
+							pre_post_mean[pre_post_mean == Inf] = NA
 			    		pre_post_mean[pre_post_mean == -Inf] = NA
 			    		pre_post_mean[is.nan(pre_post_mean)] = NA
-			    		if (q_snht$T0 > q_snht$Tc && !is.na(pre_post_mean) && pre_post_mean != 1 && pre_post_mean != 0) {       			
-		        			data_save_month[c(1:break_serie), i_series] <- pre_post_mean * data_month[c(1:break_serie), i_series]
-		        			# print(paste(i_month, i_series, break_serie))
-		        			break_points[i_month, i_series, i_snht] <- rownames(data_month)[break_serie]
-		        			change_values[i_month, i_series, i_snht] <- break_serie
+			    		if (q_snht$T0 > q_snht$Tc && !is.na(pre_post_mean) && pre_post_mean != 1 && pre_post_mean != 0) {
+								if(max(pre_post_mean * data_month[c(1:break_serie), i_series], na.rm = TRUE) <= max(data_month, na.rm = TRUE)){
+										data_save_month[c(1:break_serie), i_series] <- pre_post_mean * data_month[c(1:break_serie), i_series]
+										break_points[i_month, i_series, i_snht] <- rownames(data_month)[break_serie]
+										change_values[i_month, i_series, i_snht] <- break_serie
+								}else{
+									print(paste("alexanderson_homogenize_data", i_series, i_month))
+									delete_series <- c(delete_series, i_series)
+								}
 	    				} #if
 					} #if
 				} #if
@@ -192,7 +197,8 @@ alexanderson_homogenize_data <- function(file_data, no_use_series = c()){
 		} #while
 		data_save[date_month, ] <- data_save_month
 	}#for
-	return(list(data = data_save, break_points = break_points, change_values = change_values))
+	no_delete_series <- all_series[!all_series %in% delete_series]
+	return(list(data = data_save[, no_delete_series], break_points = break_points[, no_delete_series, ], change_values = change_values[, no_delete_series, ]))
 }
 
 #' Alexanderson test for all available files (which have successfully passed the second fill)
@@ -211,35 +217,37 @@ alexanderson_homogenize <- function(data, folder){
   data_save <- list()
 	i_ini <- names(data)[1]
 	for(i_ini in names(data)){
-    	file_data <- data[[i_ini]]
-    	if(length(file_data) > 1 && dim(file_data$coor)[1] > 0){
-    		if(dim(file_data$coor)[1] > 1){
-	    		# The stations already in the previous group must be exactly the same
-	    		if(!is.null(file_data_pre)){
-	    			delete_stations <- pre_stations[!pre_stations %in% colnames(file_data$data)]
-	    			if(length(delete_stations) > 0){
-	    				file_data$data <- cbind(file_data$data, file_data_pre$data[rownames(file_data$data), delete_stations, drop = FALSE])
-	    				file_data$coor <- rbind(file_data$coor, file_data_pre$coor[delete_stations, ])
-	    			}
-	    			file_data$data[, pre_stations] <- file_data_pre$data[rownames(file_data$data), pre_stations]
-	    		}
-	    		homogenize_data <- alexanderson_homogenize_data(file_data = file_data, no_use_series = pre_stations)
-		    	
-	    		# Generate pre-homogenization statistics
-	    		mkTrend_pval <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_pval)
+		print(i_ini)
+		file_data <- data[[i_ini]]
+		if(length(file_data) > 1 && dim(file_data$coor)[1] > 0){
+			if(dim(file_data$coor)[1] > 1){
+				# The stations already in the previous group must be exactly the same
+				if(!is.null(file_data_pre)){
+					delete_stations <- pre_stations[!pre_stations %in% colnames(file_data$data)]
+					if(length(delete_stations) > 0){
+						file_data$data <- cbind(file_data$data, file_data_pre$data[rownames(file_data$data), delete_stations, drop = FALSE])
+						file_data$coor <- rbind(file_data$coor, file_data_pre$coor[delete_stations, ])
+					}
+					file_data$data[, pre_stations] <- file_data_pre$data[rownames(file_data$data), pre_stations]
+				}
+				homogenize_data <- alexanderson_homogenize_data(file_data = file_data, no_use_series = pre_stations)
+				file_data$coor <- file_data$coor[colnames(homogenize_data$data), ]
 
-	  			mkTrend_slp <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_slp)
+				# Generate pre-homogenization statistics
+				mkTrend_pval <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_pval)
 
-					percentage <- calc_data_year_month_station(data = file_data$data, calc_function = calc_percentage)
+				mkTrend_slp <- calc_data_year_month_station(data = file_data$data, calc_function = calc_mkTrend_slp)
 
-		    	data_save[[i_ini]] <- list(data = homogenize_data$data, coor = file_data$coor, change_values = homogenize_data$change_values, break_points = homogenize_data$break_points, mkTrend_pval_pre_homogenize = mkTrend_pval, mkTrend_slp_homogenize = mkTrend_slp, percentage_homogenize = percentage)
-	    	}else{
-	    		data_save[[i_ini]] <- list(data = file_data$data, coor = file_data$coor, change_values = NA, break_points = NA, mkTrend_pval_pre_homogenize = NA, mkTrend_slp_homogenize = NA, percentage_homogenize = NA)
-	    	}
-	    	pre_stations <- rownames(data_save[[i_ini]]$coor)
-	    	file_data_pre <- data_save[[i_ini]]
-				save_csvs(i_ini, folder_name = folder, data_save = data_save[[i_ini]]$data, coor_save = data_save[[i_ini]]$coor)
-  		}#if
+				percentage <- calc_data_year_month_station(data = file_data$data, calc_function = calc_percentage)
+
+				data_save[[i_ini]] <- list(data = homogenize_data$data, coor = file_data$coor, change_values = homogenize_data$change_values, break_points = homogenize_data$break_points, mkTrend_pval_pre_homogenize = mkTrend_pval, mkTrend_slp_homogenize = mkTrend_slp, percentage_homogenize = percentage)
+			}else{
+				data_save[[i_ini]] <- list(data = file_data$data, coor = file_data$coor, change_values = NA, break_points = NA, mkTrend_pval_pre_homogenize = NA, mkTrend_slp_homogenize = NA, percentage_homogenize = NA)
+			}
+			pre_stations <- rownames(data_save[[i_ini]]$coor)
+			file_data_pre <- data_save[[i_ini]]
+			save_csvs(i_ini, folder_name = folder, data_save = data_save[[i_ini]]$data, coor_save = data_save[[i_ini]]$coor)
+		}#if
 	}#for
 	return(data_save)
 }
